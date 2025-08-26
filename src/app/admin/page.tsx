@@ -1,0 +1,265 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { DashboardLayout } from '@/components/layout/dashboard-layout'
+import { StatsCard } from '@/components/dashboard/stats-card'
+import { createSupabaseClient } from '@/lib/supabase'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { 
+  Activity, 
+  Building2, 
+  FileText, 
+  Users, 
+  AlertTriangle,
+  TrendingUp,
+  Calendar,
+  CheckCircle
+} from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+
+interface DashboardStats {
+  totalEncaminhamentos: number
+  executados: number
+  intervencoes: number
+  acompanhamentos: number
+  totalEmpresas: number
+  totalPacientes: number
+  encaminhamentosHoje: number
+}
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalEncaminhamentos: 0,
+    executados: 0,
+    intervencoes: 0,
+    acompanhamentos: 0,
+    totalEmpresas: 0,
+    totalPacientes: 0,
+    encaminhamentosHoje: 0
+  })
+  const [chartData, setChartData] = useState<any[]>([])
+  const [pieData, setPieData] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const supabase = createSupabaseClient()
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
+
+  const loadDashboardData = async () => {
+    try {
+      // Buscar estatísticas gerais
+      const [
+        { count: totalEncaminhamentos },
+        { count: executados },
+        { count: intervencoes },
+        { count: acompanhamentos },
+        { count: totalEmpresas },
+        { count: totalPacientes }
+      ] = await Promise.all([
+        supabase.from('encaminhamentos').select('*', { count: 'exact', head: true }),
+        supabase.from('encaminhamentos').select('*', { count: 'exact', head: true }).eq('status', 'executado'),
+        supabase.from('encaminhamentos').select('*', { count: 'exact', head: true }).eq('status', 'intervencao'),
+        supabase.from('encaminhamentos').select('*', { count: 'exact', head: true }).eq('status', 'acompanhamento'),
+        supabase.from('empresas').select('*', { count: 'exact', head: true }),
+        supabase.from('pacientes').select('*', { count: 'exact', head: true })
+      ])
+
+      // Encaminhamentos de hoje
+      const hoje = new Date().toISOString().split('T')[0]
+      const { count: encaminhamentosHoje } = await supabase
+        .from('encaminhamentos')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', hoje)
+
+      setStats({
+        totalEncaminhamentos: totalEncaminhamentos || 0,
+        executados: executados || 0,
+        intervencoes: intervencoes || 0,
+        acompanhamentos: acompanhamentos || 0,
+        totalEmpresas: totalEmpresas || 0,
+        totalPacientes: totalPacientes || 0,
+        encaminhamentosHoje: encaminhamentosHoje || 0
+      })
+
+      // Dados para gráfico de barras (últimos 7 dias)
+      const { data: encaminhamentosRecentes } = await supabase
+        .from('encaminhamentos')
+        .select('created_at, status')
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+
+      // Processar dados para o gráfico
+      const chartDataMap = new Map()
+      encaminhamentosRecentes?.forEach(item => {
+        const date = new Date(item.created_at).toLocaleDateString('pt-BR')
+        if (!chartDataMap.has(date)) {
+          chartDataMap.set(date, { date, total: 0, executados: 0, intervencoes: 0 })
+        }
+        const dayData = chartDataMap.get(date)
+        dayData.total++
+        if (item.status === 'executado') dayData.executados++
+        if (item.status === 'intervencao') dayData.intervencoes++
+      })
+
+      setChartData(Array.from(chartDataMap.values()))
+
+      // Dados para gráfico de pizza
+      setPieData([
+        { name: 'Executados', value: executados || 0 },
+        { name: 'Intervenções', value: intervencoes || 0 },
+        { name: 'Acompanhamento', value: acompanhamentos || 0 },
+        { name: 'Encaminhados', value: (totalEncaminhamentos || 0) - (executados || 0) - (intervencoes || 0) - (acompanhamentos || 0) }
+      ])
+
+    } catch (error) {
+      console.error('Erro ao carregar dados do dashboard:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <DashboardLayout allowedRoles={['admin']}>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard Administrativo</h1>
+          <p className="text-gray-600">Visão geral do sistema CTR</p>
+        </div>
+
+        {/* Cards de Estatísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatsCard
+            title="Total de Encaminhamentos"
+            value={stats.totalEncaminhamentos}
+            icon={FileText}
+            description="Todos os encaminhamentos"
+          />
+          <StatsCard
+            title="Executados"
+            value={stats.executados}
+            icon={CheckCircle}
+            description="Exames realizados"
+          />
+          <StatsCard
+            title="Intervenções"
+            value={stats.intervencoes}
+            icon={AlertTriangle}
+            description="Casos que precisam de atenção"
+          />
+          <StatsCard
+            title="Em Acompanhamento"
+            value={stats.acompanhamentos}
+            icon={Activity}
+            description="Pacientes em follow-up"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatsCard
+            title="Empresas Cadastradas"
+            value={stats.totalEmpresas}
+            icon={Building2}
+            description="Parceiros e check-ups"
+          />
+          <StatsCard
+            title="Total de Pacientes"
+            value={stats.totalPacientes}
+            icon={Users}
+            description="Pacientes no sistema"
+          />
+          <StatsCard
+            title="Encaminhamentos Hoje"
+            value={stats.encaminhamentosHoje}
+            icon={Calendar}
+            description="Novos hoje"
+          />
+          <StatsCard
+            title="Taxa de Execução"
+            value={`${stats.totalEncaminhamentos > 0 ? Math.round((stats.executados / stats.totalEncaminhamentos) * 100) : 0}%`}
+            icon={TrendingUp}
+            description="Percentual executado"
+          />
+        </div>
+
+        {/* Gráficos */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Encaminhamentos - Últimos 7 dias</CardTitle>
+              <CardDescription>
+                Evolução diária dos encaminhamentos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="total" fill="#8884d8" name="Total" />
+                  <Bar dataKey="executados" fill="#82ca9d" name="Executados" />
+                  <Bar dataKey="intervencoes" fill="#ffc658" name="Intervenções" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Status dos Encaminhamentos</CardTitle>
+              <CardDescription>
+                Distribuição por status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Resumo de Intervenções */}
+        {stats.intervencoes > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                Casos em Intervenção
+              </CardTitle>
+              <CardDescription>
+                {stats.intervencoes} casos precisam de atenção especial
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Existem {stats.intervencoes} encaminhamentos marcados como intervenção que requerem acompanhamento especial.
+                Acesse a seção de relatórios para mais detalhes.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </DashboardLayout>
+  )
+}

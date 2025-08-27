@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   FileText, 
   Users, 
@@ -48,6 +49,7 @@ export default function ParceiroDashboard() {
   })
   const [encaminhamentosRecentes, setEncaminhamentosRecentes] = useState<EncaminhamentoRecente[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const { profile } = useAuth()
 
@@ -61,6 +63,7 @@ export default function ParceiroDashboard() {
     if (!profile?.empresa_id) return
 
     try {
+      setError(null)
       // Buscar estatísticas da empresa
       const [
         { count: totalMedicos },
@@ -131,11 +134,23 @@ export default function ParceiroDashboard() {
 
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard parceiro:', error)
+      setError('Erro ao carregar dados do dashboard')
     } finally {
       setLoading(false)
     }
   }
 
+  if (error) {
+    return (
+      <DashboardLayout allowedRoles={['parceiro']}>
+        <div className="space-y-6">
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    )
+  }
   return (
     <DashboardLayout allowedRoles={['parceiro']}>
       <div className="space-y-6">

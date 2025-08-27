@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   FileText, 
   Clock, 
@@ -41,6 +42,7 @@ export default function CTRDashboard() {
   })
   const [pedidosRecentes, setPedidosRecentes] = useState<PedidoRecente[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadDashboardData()
@@ -48,6 +50,7 @@ export default function CTRDashboard() {
 
   const loadDashboardData = async () => {
     try {
+      setError(null)
       const hoje = new Date().toISOString().split('T')[0]
 
       // Buscar estatísticas
@@ -98,11 +101,23 @@ export default function CTRDashboard() {
 
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard CTR:', error)
+      setError('Erro ao carregar dados do dashboard')
     } finally {
       setLoading(false)
     }
   }
 
+  if (error) {
+    return (
+      <DashboardLayout allowedRoles={['ctr']}>
+        <div className="space-y-6">
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    )
+  }
   return (
     <DashboardLayout allowedRoles={['ctr']}>
       <div className="space-y-6">

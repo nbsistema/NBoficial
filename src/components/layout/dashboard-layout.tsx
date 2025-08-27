@@ -1,10 +1,10 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
 import { Header } from './header'
 import { Sidebar } from './sidebar'
 import { Loading } from '@/components/ui/loading'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -12,7 +12,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps) {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, error } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -34,12 +34,44 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     }
   }, [user, profile, loading, allowedRoles, navigate])
 
+  // Show loading while checking authentication
   if (loading) {
-    return <Loading />
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loading />
+      </div>
+    )
   }
 
-  if (!user || !profile || !allowedRoles.includes(profile.role)) {
-    return <Loading />
+  // Show error if there's an authentication error
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+        <Alert className="max-w-md">
+          <AlertDescription>
+            {error}. Tente fazer login novamente.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  // Show loading if user or profile is missing
+  if (!user || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loading />
+      </div>
+    )
+  }
+
+  // Show loading if user doesn't have permission (will redirect)
+  if (!allowedRoles.includes(profile.role)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loading />
+      </div>
+    )
   }
 
   return (

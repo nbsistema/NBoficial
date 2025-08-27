@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { signIn } = useAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,42 +22,19 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      const { error: signInError } = await signIn(email, password)
 
-      if (error) throw error
-
-      if (data.user) {
-        // Buscar o perfil do usuário para redirecionar corretamente
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .single()
-
-        if (profile) {
-          switch (profile.role) {
-            case 'admin':
-              navigate('/admin')
-              break
-            case 'ctr':
-              navigate('/ctr')
-              break
-            case 'parceiro':
-              navigate('/parceiro')
-              break
-            case 'checkup':
-              navigate('/checkup')
-              break
-            default:
-              navigate('/')
-          }
-        }
+      if (signInError) {
+        setError(signInError.message || 'Erro ao fazer login')
+        return
       }
+
+      // The useAuth hook will handle the redirect based on user role
+      // through the onAuthStateChange listener
+      
     } catch (error: any) {
-      setError(error.message)
+      console.error('Login error:', error)
+      setError('Erro inesperado ao fazer login')
     } finally {
       setLoading(false)
     }
@@ -103,6 +81,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="seu@email.com"
+                  disabled={loading}
                 />
               </div>
 
@@ -115,6 +94,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
+                  disabled={loading}
                 />
               </div>
 

@@ -1,8 +1,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 // Fallback values for development
-const FALLBACK_SUPABASE_URL = 'https://placeholder.supabase.co'
-const FALLBACK_SUPABASE_ANON_KEY = 'placeholder-key'
+const FALLBACK_SUPABASE_URL = 'https://your-project.supabase.co'
+const FALLBACK_SUPABASE_ANON_KEY = 'your-anon-key-here'
 
 // Singleton instance
 let supabaseInstance: SupabaseClient | null = null
@@ -22,7 +22,14 @@ export const createSupabaseClient = (): SupabaseClient => {
   }
   
   // Create and store the singleton instance
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey)
+  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  })
+  
   return supabaseInstance
 }
 

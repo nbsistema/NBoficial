@@ -12,27 +12,33 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let mounted = true
+
     const initializeAuth = async () => {
       try {
         // Get initial session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
+        if (!mounted) return
+
         if (sessionError) {
           console.error('Session error:', sessionError)
-          setError('Failed to get session')
+          setError('Erro ao obter sessão')
           setLoading(false)
           return
         }
 
         setUser(session?.user ?? null)
+        
         if (session?.user) {
           await fetchUserProfile(session.user.id)
         } else {
           setLoading(false)
         }
       } catch (err) {
+        if (!mounted) return
         console.error('Auth initialization error:', err)
-        setError('Failed to initialize authentication')
+        setError('Erro ao inicializar autenticação')
         setLoading(false)
       }
     }
@@ -41,29 +47,21 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return
+
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          const { data: userProfile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single()
-          
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('Error getting profile:', profileError)
-          }
-          
-          setProfile(userProfile)
+          await fetchUserProfile(session.user.id)
         } else {
           setProfile(null)
+          setLoading(false)
         }
-        
-        setLoading(false)
       }
     )
 
     return () => {
+      mounted = false
       subscription.unsubscribe()
     }
   }, [])
@@ -77,15 +75,22 @@ export function useAuth() {
         .single()
         
       if (error) {
-        console.error('Error fetching user profile:', error)
-        setError('Failed to fetch user profile')
+        if (error.code === 'PGRST116') {
+          // Profile not found
+          setError('Perfil de usuário não encontrado')
+        } else {
+          console.error('Error fetching user profile:', error)
+          setError('Erro ao buscar perfil do usuário')
+        }
+        setProfile(null)
       } else {
         setProfile(data)
         setError(null)
       }
     } catch (err) {
       console.error('Fetch profile error:', err)
-      setError('Failed to fetch user profile')
+      setError('Erro ao buscar perfil do usuário')
+      setProfile(null)
     } finally {
       setLoading(false)
     }
@@ -93,16 +98,20 @@ export function useAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
+      setError(null)
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
+      
       if (error) {
         setError(error.message)
+        return { error }
       }
-      return { error }
+      
+      return { error: null }
     } catch (err) {
-      const errorMessage = 'Failed to sign in'
+      const errorMessage = 'Erro ao fazer login'
       setError(errorMessage)
       return { error: { message: errorMessage } }
     }
@@ -110,15 +119,21 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
+      setError(null)
       const { error } = await supabase.auth.signOut()
+      
       if (error) {
         setError(error.message)
-      } else {
-        setError(null)
+        return { error }
       }
-      return { error }
+      
+      // Clear local state
+      setUser(null)
+      setProfile(null)
+      
+      return { error: null }
     } catch (err) {
-      const errorMessage = 'Failed to sign out'
+      const errorMessage = 'Erro ao fazer logout'
       setError(errorMessage)
       return { error: { message: errorMessage } }
     }
@@ -133,5 +148,7 @@ export function useAuth() {
     signOut,
     isAdmin: profile?.role === 'admin',
     isCTR: profile?.role === 'ctr',
+    isParceiro: profile?.role === 'parceiro',
+    isCheckup: profile?.role === 'checkup'
   }
 }

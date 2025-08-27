@@ -7,30 +7,34 @@ import { Loading } from '../components/ui/loading'
 const HomePage: React.FC = () => {
   const { user, profile, loading, error } = useAuth()
 
+  // Show loading while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loading />
       </div>
     )
   }
 
+  // Show error if there's an authentication error
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <Alert className="max-w-md">
           <AlertDescription>
-            {error}. Please check your Supabase configuration.
+            {error}. Verifique sua configuração do Supabase ou tente fazer login novamente.
           </AlertDescription>
         </Alert>
       </div>
     )
   }
 
+  // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" replace />
   }
 
+  // Redirect to login if no profile found
   if (!profile) {
     return <Navigate to="/login" replace />
   }

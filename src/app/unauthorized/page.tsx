@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertTriangle } from 'lucide-react'
@@ -25,7 +25,7 @@ export default function UnauthorizedPage() {
             <p className="text-gray-600 mb-6">
               Entre em contato com o administrador do sistema se você acredita que deveria ter acesso a esta funcionalidade.
             </p>
-            <Link href="/">
+            <Link to="/">
               <Button className="w-full">
                 Voltar ao Início
               </Button>

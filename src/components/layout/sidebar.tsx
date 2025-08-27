@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import {
@@ -56,7 +55,7 @@ const menuItems = {
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
-  const pathname = usePathname()
+  const location = useLocation()
   const { profile, signOut } = useAuth()
 
   if (!profile) return null
@@ -89,12 +88,12 @@ export function Sidebar() {
       <nav className="flex-1 p-4 space-y-2">
         {items.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/')
           
           return (
             <Link
               key={item.href}
-              href={item.href}
+              to={item.href}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 isActive

@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   build: {
     outDir: "dist",
-    // Gera sourcemap só em desenvolvimento (útil pra debug local, mas não pesa no deploy)
+    // Gera sourcemap só em desenvolvimento
     sourcemap: process.env.NODE_ENV !== "production",
     rollupOptions: {
       output: {
@@ -22,6 +22,4 @@ export default defineConfig({
       }
     }
   }
-})
-
 })

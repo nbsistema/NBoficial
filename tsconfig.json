@@ -28,15 +28,11 @@
     "allowJs": true,
     "incremental": true,
     "esModuleInterop": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
   },
   "include": [
     "src",
-    ".next/types/**/*.ts"
+    "**/*.ts",
+    "**/*.tsx"
   ],
   "references": [
     {

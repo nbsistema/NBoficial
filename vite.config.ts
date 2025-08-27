@@ -1,25 +1,27 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from "vite"
+import react from "@vitejs/plugin-react"
+import tsconfigPaths from "vite-tsconfig-paths"
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+  plugins: [react(), tsconfigPaths()],
   build: {
-    outDir: 'dist',
-    sourcemap: true,
+    outDir: "dist",
+    // Gera sourcemap só em desenvolvimento (útil pra debug local, mas não pesa no deploy)
+    sourcemap: process.env.NODE_ENV !== "production",
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          supabase: ['@supabase/supabase-js']
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("@supabase/supabase-js")) {
+              return "supabase"
+            }
+            return "vendor"
+          }
         }
       }
     }
   }
+})
+
 })

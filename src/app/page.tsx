@@ -1,37 +1,53 @@
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
-import { Loading } from '@/components/ui/loading'
+import React from 'react'
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+import { Alert, AlertDescription } from '../components/ui/alert'
+import { Loading } from '../components/ui/loading'
 
-export default function HomePage() {
-  const { user, profile, loading } = useAuth()
-  const navigate = useNavigate()
+const HomePage: React.FC = () => {
+  const { user, userProfile, loading, error } = useAuth()
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        navigate('/login')
-      } else if (profile) {
-        // Redirecionar baseado no role do usuário
-        switch (profile.role) {
-          case 'admin':
-            navigate('/admin')
-            break
-          case 'ctr':
-            navigate('/ctr')
-            break
-          case 'parceiro':
-            navigate('/parceiro')
-            break
-          case 'checkup':
-            navigate('/checkup')
-            break
-          default:
-            navigate('/login')
-        }
-      }
-    }
-  }, [user, profile, loading, navigate])
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loading />
+      </div>
+    )
+  }
 
-  return <Loading />
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Alert className="max-w-md">
+          <AlertDescription>
+            {error}. Please check your Supabase configuration.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (!userProfile) {
+    return <Navigate to="/login" replace />
+  }
+
+  // Redirect based on user role
+  switch (userProfile.role) {
+    case 'admin':
+      return <Navigate to="/admin" replace />
+    case 'ctr':
+      return <Navigate to="/ctr" replace />
+    case 'parceiro':
+      return <Navigate to="/parceiro" replace />
+    case 'checkup':
+      return <Navigate to="/checkup" replace />
+    default:
+      return <Navigate to="/login" replace />
+  }
 }
+
+export default HomePage

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { StatsCard } from '@/components/dashboard/stats-card'
-import { createSupabaseClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -50,7 +50,6 @@ export default function ParceiroDashboard() {
   const [loading, setLoading] = useState(true)
 
   const { profile } = useAuth()
-  const supabase = createSupabaseClient()
 
   useEffect(() => {
     if (profile?.empresa_id) {

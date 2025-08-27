@@ -4,7 +4,15 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 const FALLBACK_SUPABASE_URL = 'https://placeholder.supabase.co'
 const FALLBACK_SUPABASE_ANON_KEY = 'placeholder-key'
 
+// Singleton instance
+let supabaseInstance: SupabaseClient | null = null
+
 export const createSupabaseClient = (): SupabaseClient => {
+  // Return existing instance if already created
+  if (supabaseInstance) {
+    return supabaseInstance
+  }
+
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY
   
@@ -13,8 +21,13 @@ export const createSupabaseClient = (): SupabaseClient => {
     console.error('Missing Supabase environment variables in production')
   }
   
-  return createClient(supabaseUrl, supabaseAnonKey)
+  // Create and store the singleton instance
+  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey)
+  return supabaseInstance
 }
+
+// Export the singleton instance directly for convenience
+export const supabase = createSupabaseClient()
 
 export type Database = {
   public: {

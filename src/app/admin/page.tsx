@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { StatsCard } from '@/components/dashboard/stats-card'
-import { createSupabaseClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   Activity, 
@@ -40,8 +40,6 @@ export default function AdminDashboard() {
   const [chartData, setChartData] = useState<any[]>([])
   const [pieData, setPieData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-
-  const supabase = createSupabaseClient()
 
   useEffect(() => {
     loadDashboardData()

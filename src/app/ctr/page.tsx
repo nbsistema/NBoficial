@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { StatsCard } from '@/components/dashboard/stats-card'
-import { createSupabaseClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,8 +41,6 @@ export default function CTRDashboard() {
   })
   const [pedidosRecentes, setPedidosRecentes] = useState<PedidoRecente[]>([])
   const [loading, setLoading] = useState(true)
-
-  const supabase = createSupabaseClient()
 
   useEffect(() => {
     loadDashboardData()

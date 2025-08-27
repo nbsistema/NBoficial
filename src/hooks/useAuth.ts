@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { createSupabaseClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { Database } from '@/lib/supabase'
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row']
@@ -10,7 +10,6 @@ export function useAuth() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createSupabaseClient()
 
   useEffect(() => {
     const initializeAuth = async () => {

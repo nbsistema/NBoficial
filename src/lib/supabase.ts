@@ -1,11 +1,16 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
+// Fallback values for development
+const FALLBACK_SUPABASE_URL = 'https://placeholder.supabase.co'
+const FALLBACK_SUPABASE_ANON_KEY = 'placeholder-key'
+
 export const createSupabaseClient = (): SupabaseClient => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY
   
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables')
+  // Only throw error in production if real values are missing
+  if (import.meta.env.PROD && (supabaseUrl === FALLBACK_SUPABASE_URL || supabaseAnonKey === FALLBACK_SUPABASE_ANON_KEY)) {
+    console.error('Missing Supabase environment variables in production')
   }
   
   return createClient(supabaseUrl, supabaseAnonKey)

@@ -42,6 +42,7 @@ export function useAuth() {
 
     initializeAuth()
 
+    const getUser = async () => {
       if (user) {
         const { data: profile, error: profileError } = await supabase
           .from('user_profiles')
@@ -53,7 +54,7 @@ export function useAuth() {
           console.error('Error getting profile:', profileError)
         }
         
-        setProfile(profile)
+        setUserProfile(profile)
       }
       
       setLoading(false)
@@ -74,33 +75,46 @@ export function useAuth() {
           
           if (profileError && profileError.code !== 'PGRST116') {
             console.error('Error getting profile:', profileError)
-      async (event, session) => {
-        try {
-          setUser(session?.user ?? null)
-          if (session?.user) {
-            await fetchUserProfile(session.user.id)
-          } else {
-            setUserProfile(null)
-            setLoading(false)
           }
-        } catch (err) {
-          console.error('Auth state change error:', err)
-          setError('Authentication error occurred')
+          
+          setUserProfile(profile)
+        } else {
+          setUserProfile(null)
+        }
+        
         setLoading(false)
       }
+    )
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
   const fetchUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
+        .single()
+        
       if (error) {
         console.error('Error fetching user profile:', error)
         setError('Failed to fetch user profile')
       } else {
+        setUserProfile(data)
         setError(null)
       }
     } catch (err) {
+      console.error('Fetch profile error:', err)
+      setError('Failed to fetch user profile')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -117,14 +131,7 @@ export function useAuth() {
     }
   }
 
-  return {
-    user,
-    profile,
-    loading,
-    error,
-    signOut,
-    isAdmin: profile?.role === 'admin',
-    isCTR: profile?.role === 'ctr',
+  const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
       if (error) {
@@ -138,5 +145,16 @@ export function useAuth() {
       setError(errorMessage)
       return { error: { message: errorMessage } }
     }
+  }
+
+  return {
+    user,
+    userProfile,
+    loading,
+    error,
+    signIn,
+    signOut,
+    isAdmin: userProfile?.role === 'admin',
+    isCTR: userProfile?.role === 'ctr',
   }
 }

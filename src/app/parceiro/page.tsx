@@ -17,7 +17,7 @@ import {
   Eye
 } from 'lucide-react'
 import { formatDateTime, getStatusColor, getStatusLabel } from '@/lib/utils'
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 
 interface ParceiroStats {
   totalEncaminhamentos: number

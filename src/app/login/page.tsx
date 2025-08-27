@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { createSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
+  const navigate = useNavigate()
   const supabase = createSupabaseClient()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -42,19 +42,19 @@ export default function LoginPage() {
         if (profile) {
           switch (profile.role) {
             case 'admin':
-              router.push('/admin')
+              navigate('/admin')
               break
             case 'ctr':
-              router.push('/ctr')
+              navigate('/ctr')
               break
             case 'parceiro':
-              router.push('/parceiro')
+              navigate('/parceiro')
               break
             case 'checkup':
-              router.push('/checkup')
+              navigate('/checkup')
               break
             default:
-              router.push('/')
+              navigate('/')
           }
         }
       }

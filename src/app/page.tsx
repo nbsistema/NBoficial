@@ -1,39 +1,39 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Loading } from '@/components/ui/loading'
 
 export default function HomePage() {
   const { user, profile, loading } = useAuth()
-  const router = useRouter()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push('/login')
+        navigate('/login')
       } else if (profile) {
         // Redirecionar baseado no role do usuário
         switch (profile.role) {
           case 'admin':
-            router.push('/admin')
+            navigate('/admin')
             break
           case 'ctr':
-            router.push('/ctr')
+            navigate('/ctr')
             break
           case 'parceiro':
-            router.push('/parceiro')
+            navigate('/parceiro')
             break
           case 'checkup':
-            router.push('/checkup')
+            navigate('/checkup')
             break
           default:
-            router.push('/login')
+            navigate('/login')
         }
       }
     }
-  }, [user, profile, loading, router])
+  }, [user, profile, loading, navigate])
 
   return <Loading />
 }

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Loading } from '@/components/ui/loading'
 import { Sidebar } from './sidebar'
 import { Header } from './header'
-import { redirect } from 'next/navigation'
+import { Navigate } from 'react-router-dom'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -19,11 +19,11 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
   }
 
   if (!user || !profile) {
-    redirect('/login')
+    return <Navigate to="/login" replace />
   }
 
   if (allowedRoles && !allowedRoles.includes(profile.role)) {
-    redirect('/unauthorized')
+    return <Navigate to="/unauthorized" replace />
   }
 
   return (

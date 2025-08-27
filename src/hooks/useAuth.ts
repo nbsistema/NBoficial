@@ -16,6 +16,8 @@ export function useAuth() {
 
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...')
+        
         // Get initial session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
@@ -28,6 +30,7 @@ export function useAuth() {
           return
         }
 
+        console.log('Session:', session?.user?.id ? 'Found' : 'Not found')
         setUser(session?.user ?? null)
         
         if (session?.user) {
@@ -45,16 +48,22 @@ export function useAuth() {
 
     initializeAuth()
 
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return
 
+        console.log('Auth state change:', event, session?.user?.id ? 'User found' : 'No user')
+        
         setUser(session?.user ?? null)
         
         if (session?.user) {
+          // Reset error when user logs in
+          setError(null)
           await fetchUserProfile(session.user.id)
         } else {
           setProfile(null)
+          setError(null)
           setLoading(false)
         }
       }
@@ -68,6 +77,8 @@ export function useAuth() {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId)
+      
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -75,15 +86,20 @@ export function useAuth() {
         .single()
         
       if (error) {
+        console.error('Profile fetch error:', error)
+        
         if (error.code === 'PGRST116') {
-          // Profile not found
-          setError('Perfil de usuário não encontrado')
+          // Profile not found - this is a critical error
+          console.error('Profile not found for user:', userId)
+          setError('Perfil de usuário não encontrado. Entre em contato com o administrador.')
+          setProfile(null)
         } else {
           console.error('Error fetching user profile:', error)
           setError('Erro ao buscar perfil do usuário')
+          setProfile(null)
         }
-        setProfile(null)
       } else {
+        console.log('Profile found:', data?.role)
         setProfile(data)
         setError(null)
       }
@@ -99,20 +115,31 @@ export function useAuth() {
   const signIn = async (email: string, password: string) => {
     try {
       setError(null)
-      const { error } = await supabase.auth.signInWithPassword({
+      setLoading(true)
+      
+      console.log('Attempting sign in for:', email)
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       
       if (error) {
+        console.error('Sign in error:', error)
         setError(error.message)
+        setLoading(false)
         return { error }
       }
       
+      console.log('Sign in successful, user:', data.user?.id)
+      
+      // Don't set loading to false here - let the auth state change handle it
       return { error: null }
     } catch (err) {
+      console.error('Sign in exception:', err)
       const errorMessage = 'Erro ao fazer login'
       setError(errorMessage)
+      setLoading(false)
       return { error: { message: errorMessage } }
     }
   }

@@ -16,9 +16,14 @@ export const createSupabaseClient = (): SupabaseClient => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY
   
+  // Only warn in development if real values are missing
+  if (import.meta.env.DEV && (supabaseUrl === FALLBACK_SUPABASE_URL || supabaseAnonKey === FALLBACK_SUPABASE_ANON_KEY)) {
+    console.warn('Using fallback Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.')
+  }
+  
   // Only throw error in production if real values are missing
   if (import.meta.env.PROD && (supabaseUrl === FALLBACK_SUPABASE_URL || supabaseAnonKey === FALLBACK_SUPABASE_ANON_KEY)) {
-    console.error('Missing Supabase environment variables in production')
+    throw new Error('Missing Supabase environment variables in production')
   }
   
   // Create and store the singleton instance
@@ -26,7 +31,8 @@ export const createSupabaseClient = (): SupabaseClient => {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      flowType: 'pkce'
     }
   })
   

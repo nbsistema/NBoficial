@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { createSupabaseClient } from '@/lib/supabase'
-import type { Database } from '../lib/supabase'
 import type { Database } from '@/lib/supabase'
 
-type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const supabase = createSupabaseClient()
@@ -42,32 +40,12 @@ export function useAuth() {
 
     initializeAuth()
 
-    const getUser = async () => {
-      if (user) {
-        const { data: profile, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
-        
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Error getting profile:', profileError)
-        }
-        
-        setUserProfile(profile)
-      }
-      
-      setLoading(false)
-    }
-
-    getUser()
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          const { data: profile, error: profileError } = await supabase
+          const { data: userProfile, error: profileError } = await supabase
             .from('user_profiles')
             .select('*')
             .eq('user_id', session.user.id)
@@ -77,9 +55,9 @@ export function useAuth() {
             console.error('Error getting profile:', profileError)
           }
           
-          setUserProfile(profile)
+          setProfile(userProfile)
         } else {
-          setUserProfile(null)
+          setProfile(null)
         }
         
         setLoading(false)
@@ -103,7 +81,7 @@ export function useAuth() {
         console.error('Error fetching user profile:', error)
         setError('Failed to fetch user profile')
       } else {
-        setUserProfile(data)
+        setProfile(data)
         setError(null)
       }
     } catch (err) {
@@ -149,12 +127,12 @@ export function useAuth() {
 
   return {
     user,
-    userProfile,
+    profile,
     loading,
     error,
     signIn,
     signOut,
-    isAdmin: userProfile?.role === 'admin',
-    isCTR: userProfile?.role === 'ctr',
+    isAdmin: profile?.role === 'admin',
+    isCTR: profile?.role === 'ctr',
   }
 }

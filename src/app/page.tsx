@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '../components/ui/alert'
 import { Loading } from '../components/ui/loading'
 
 const HomePage: React.FC = () => {
-  const { user, userProfile, loading, error } = useAuth()
+  const { user, profile, loading, error } = useAuth()
 
   if (loading) {
     return (
@@ -31,12 +31,12 @@ const HomePage: React.FC = () => {
     return <Navigate to="/login" replace />
   }
 
-  if (!userProfile) {
+  if (!profile) {
     return <Navigate to="/login" replace />
   }
 
   // Redirect based on user role
-  switch (userProfile.role) {
+  switch (profile.role) {
     case 'admin':
       return <Navigate to="/admin" replace />
     case 'ctr':

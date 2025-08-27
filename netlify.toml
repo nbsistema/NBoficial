@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  NETLIFY_NEXT_PLUGIN_SKIP = "true" # segurança extra contra Next.js runtime
 
 [build.processing]
   skip_processing = false
@@ -23,3 +24,4 @@
   from = "/*"
   to = "/index.html"
   status = 200
+

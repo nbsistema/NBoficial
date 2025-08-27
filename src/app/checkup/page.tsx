@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   ClipboardList, 
   Users, 
@@ -44,6 +45,7 @@ export default function CheckupDashboard() {
   })
   const [solicitacoesRecentes, setSolicitacoesRecentes] = useState<SolicitacaoRecente[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const { profile } = useAuth()
 
@@ -57,6 +59,7 @@ export default function CheckupDashboard() {
     if (!profile?.empresa_id) return
 
     try {
+      setError(null)
       // Buscar estatísticas da empresa
       const [
         { count: totalBaterias },
@@ -113,6 +116,7 @@ export default function CheckupDashboard() {
 
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard checkup:', error)
+      setError('Erro ao carregar dados do dashboard')
     } finally {
       setLoading(false)
     }
@@ -129,6 +133,18 @@ export default function CheckupDashboard() {
       default:
         return <Badge>{status}</Badge>
     }
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout allowedRoles={['checkup']}>
+        <div className="space-y-6">
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (

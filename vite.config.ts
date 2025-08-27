@@ -12,12 +12,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          supabase: ['@supabase/supabase-js', '@supabase/auth-helpers-react']
+          supabase: ['@supabase/supabase-js']
         }
       }
     }

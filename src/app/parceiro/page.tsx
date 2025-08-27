@@ -197,19 +197,19 @@ export default function ParceiroDashboard() {
               <CardTitle>Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/parceiro/encaminhamentos/novo">
+              <Link to="/parceiro/encaminhamentos/novo">
                 <Button className="w-full justify-start">
                   <Plus className="mr-2 h-4 w-4" />
                   Novo Encaminhamento
                 </Button>
               </Link>
-              <Link href="/parceiro/medicos">
+              <Link to="/parceiro/medicos">
                 <Button className="w-full justify-start" variant="outline">
                   <Stethoscope className="mr-2 h-4 w-4" />
                   Gerenciar Médicos
                 </Button>
               </Link>
-              <Link href="/parceiro/convenios">
+              <Link to="/parceiro/convenios">
                 <Button className="w-full justify-start" variant="outline">
                   <Activity className="mr-2 h-4 w-4" />
                   Gerenciar Convênios
@@ -256,7 +256,7 @@ export default function ParceiroDashboard() {
                           </p>
                         )}
                       </div>
-                      <Link href={`/parceiro/pacientes/${encaminhamento.id}`}>
+                      <Link to={`/parceiro/pacientes/${encaminhamento.id}`}>
                         <Button size="sm" variant="outline">
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -282,7 +282,7 @@ export default function ParceiroDashboard() {
               <p className="text-yellow-700 mb-3">
                 Você tem {stats.intervencoes} casos marcados como intervenção que precisam de acompanhamento.
               </p>
-              <Link href="/parceiro/pacientes?status=intervencao">
+              <Link to="/parceiro/pacientes?status=intervencao">
                 <Button variant="outline" className="border-yellow-300 text-yellow-800 hover:bg-yellow-100">
                   Ver Casos de Intervenção
                 </Button>

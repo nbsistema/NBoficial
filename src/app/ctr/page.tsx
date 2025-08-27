@@ -150,19 +150,19 @@ export default function CTRDashboard() {
               <CardTitle>Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/ctr/pedidos">
+              <Link to="/ctr/pedidos">
                 <Button className="w-full justify-start" variant="outline">
                   <FileText className="mr-2 h-4 w-4" />
                   Ver Todos os Pedidos
                 </Button>
               </Link>
-              <Link href="/ctr/empresas">
+              <Link to="/ctr/empresas">
                 <Button className="w-full justify-start" variant="outline">
                   <Users className="mr-2 h-4 w-4" />
                   Gerenciar Empresas
                 </Button>
               </Link>
-              <Link href="/ctr/relatorios">
+              <Link to="/ctr/relatorios">
                 <Button className="w-full justify-start" variant="outline">
                   <FileText className="mr-2 h-4 w-4" />
                   Gerar Relatórios
@@ -201,7 +201,7 @@ export default function CTRDashboard() {
                           {formatDateTime(pedido.created_at)}
                         </p>
                       </div>
-                      <Link href={`/ctr/pedidos/${pedido.id}`}>
+                      <Link to={`/ctr/pedidos/${pedido.id}`}>
                         <Button size="sm" variant="outline">
                           Ver
                         </Button>
@@ -227,7 +227,7 @@ export default function CTRDashboard() {
               <p className="text-yellow-700 mb-3">
                 Existem {stats.totalIntervencoes} casos marcados como intervenção que precisam de acompanhamento especial.
               </p>
-              <Link href="/ctr/pedidos?status=intervencao">
+              <Link to="/ctr/pedidos?status=intervencao">
                 <Button variant="outline" className="border-yellow-300 text-yellow-800 hover:bg-yellow-100">
                   Ver Casos de Intervenção
                 </Button>

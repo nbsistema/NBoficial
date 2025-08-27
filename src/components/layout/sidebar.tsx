@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-const menuItems = {
+const menuItems: Record<string, Array<{ icon: any; label: string; href: string }>> = {
   admin: [
     { icon: Home, label: 'Dashboard', href: '/admin' },
     { icon: Building2, label: 'Empresas', href: '/admin/empresas' },

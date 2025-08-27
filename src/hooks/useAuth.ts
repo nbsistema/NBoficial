@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { User } from '@supabase/auth-helpers-react'
+import { User } from '@supabase/supabase-js'
 import { createSupabaseClient } from '@/lib/supabase'
-import { Database } from '@/lib/supabase'
+import type { Database } from '@/lib/supabase'
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 
@@ -13,15 +13,25 @@ export function useAuth() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error) {
+        console.error('Error getting user:', error)
+        setLoading(false)
+        return
+      }
+      
       setUser(user)
 
       if (user) {
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('user_id', user.id)
           .single()
+        
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error getting profile:', profileError)
+        }
         
         setProfile(profile)
       }
@@ -36,11 +46,15 @@ export function useAuth() {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('user_profiles')
             .select('*')
             .eq('user_id', session.user.id)
             .single()
+          
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error('Error getting profile:', profileError)
+          }
           
           setProfile(profile)
         } else {
@@ -55,7 +69,10 @@ export function useAuth() {
   }, [supabase])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   return {

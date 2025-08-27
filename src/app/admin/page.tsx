@@ -53,12 +53,12 @@ export default function AdminDashboard() {
     try {
       // Buscar estatísticas gerais
       const [
-        { count: totalEncaminhamentos },
-        { count: executados },
-        { count: intervencoes },
-        { count: acompanhamentos },
-        { count: totalEmpresas },
-        { count: totalPacientes }
+        totalEncaminhamentosResult,
+        executadosResult,
+        intervencoesResult,
+        acompanhamentosResult,
+        totalEmpresasResult,
+        totalPacientesResult
       ] = await Promise.all([
         supabase.from('encaminhamentos').select('*', { count: 'exact', head: true }),
         supabase.from('encaminhamentos').select('*', { count: 'exact', head: true }).eq('status', 'executado'),
@@ -70,19 +70,19 @@ export default function AdminDashboard() {
 
       // Encaminhamentos de hoje
       const hoje = new Date().toISOString().split('T')[0]
-      const { count: encaminhamentosHoje } = await supabase
+      const encaminhamentosHojeResult = await supabase
         .from('encaminhamentos')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', hoje)
 
       setStats({
-        totalEncaminhamentos: totalEncaminhamentos || 0,
-        executados: executados || 0,
-        intervencoes: intervencoes || 0,
-        acompanhamentos: acompanhamentos || 0,
-        totalEmpresas: totalEmpresas || 0,
-        totalPacientes: totalPacientes || 0,
-        encaminhamentosHoje: encaminhamentosHoje || 0
+        totalEncaminhamentos: totalEncaminhamentosResult.count || 0,
+        executados: executadosResult.count || 0,
+        intervencoes: intervencoesResult.count || 0,
+        acompanhamentos: acompanhamentosResult.count || 0,
+        totalEmpresas: totalEmpresasResult.count || 0,
+        totalPacientes: totalPacientesResult.count || 0,
+        encaminhamentosHoje: encaminhamentosHojeResult.count || 0
       })
 
       // Dados para gráfico de barras (últimos 7 dias)
@@ -92,13 +92,13 @@ export default function AdminDashboard() {
         .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
 
       // Processar dados para o gráfico
-      const chartDataMap = new Map()
+      const chartDataMap = new Map<string, { date: string; total: number; executados: number; intervencoes: number }>()
       encaminhamentosRecentes?.forEach(item => {
         const date = new Date(item.created_at).toLocaleDateString('pt-BR')
         if (!chartDataMap.has(date)) {
           chartDataMap.set(date, { date, total: 0, executados: 0, intervencoes: 0 })
         }
-        const dayData = chartDataMap.get(date)
+        const dayData = chartDataMap.get(date)!
         dayData.total++
         if (item.status === 'executado') dayData.executados++
         if (item.status === 'intervencao') dayData.intervencoes++
@@ -108,10 +108,10 @@ export default function AdminDashboard() {
 
       // Dados para gráfico de pizza
       setPieData([
-        { name: 'Executados', value: executados || 0 },
-        { name: 'Intervenções', value: intervencoes || 0 },
-        { name: 'Acompanhamento', value: acompanhamentos || 0 },
-        { name: 'Encaminhados', value: (totalEncaminhamentos || 0) - (executados || 0) - (intervencoes || 0) - (acompanhamentos || 0) }
+        { name: 'Executados', value: executadosResult.count || 0 },
+        { name: 'Intervenções', value: intervencoesResult.count || 0 },
+        { name: 'Acompanhamento', value: acompanhamentosResult.count || 0 },
+        { name: 'Encaminhados', value: (totalEncaminhamentosResult.count || 0) - (executadosResult.count || 0) - (intervencoesResult.count || 0) - (acompanhamentosResult.count || 0) }
       ])
 
     } catch (error) {

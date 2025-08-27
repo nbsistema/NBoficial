@@ -177,19 +177,19 @@ export default function CheckupDashboard() {
               <CardTitle>Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/checkup/baterias/nova">
+              <Link to="/checkup/baterias/nova">
                 <Button className="w-full justify-start">
                   <Plus className="mr-2 h-4 w-4" />
                   Nova Bateria
                 </Button>
               </Link>
-              <Link href="/checkup/funcionarios/novo">
+              <Link to="/checkup/funcionarios/novo">
                 <Button className="w-full justify-start" variant="outline">
                   <Users className="mr-2 h-4 w-4" />
                   Cadastrar Funcionário
                 </Button>
               </Link>
-              <Link href="/checkup/solicitacoes/nova">
+              <Link to="/checkup/solicitacoes/nova">
                 <Button className="w-full justify-start" variant="outline">
                   <Calendar className="mr-2 h-4 w-4" />
                   Nova Solicitação
@@ -234,7 +234,7 @@ export default function CheckupDashboard() {
                           </p>
                         )}
                       </div>
-                      <Link href={`/checkup/solicitacoes/${solicitacao.id}`}>
+                      <Link to={`/checkup/solicitacoes/${solicitacao.id}`}>
                         <Button size="sm" variant="outline">
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -260,7 +260,7 @@ export default function CheckupDashboard() {
               <p className="text-blue-700 mb-3">
                 Você tem {stats.solicitacoesPendentes} solicitações de check-up aguardando execução.
               </p>
-              <Link href="/checkup/solicitacoes?status=pendente">
+              <Link to="/checkup/solicitacoes?status=pendente">
                 <Button variant="outline" className="border-blue-300 text-blue-800 hover:bg-blue-100">
                   Ver Solicitações Pendentes
                 </Button>

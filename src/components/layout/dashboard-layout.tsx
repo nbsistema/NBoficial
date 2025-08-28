@@ -1,6 +1,6 @@
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 import { Header } from './header'
 import { Sidebar } from './sidebar'
 import { Loading } from '@/components/ui/loading'
@@ -16,81 +16,43 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
   const navigate = useNavigate()
   const [timeoutReached, setTimeoutReached] = useState(false)
 
-  console.log('📊 DashboardLayout: Renderizando com estado:', { 
-    user: user?.id ? 'exists' : 'null', 
-    profile: profile?.role || 'null', 
-    loading, 
-    error,
-    allowedRoles 
-  })
-
   // Timeout de segurança
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (loading) {
-        console.warn('⚠️ DashboardLayout: Timeout no loading')
         setTimeoutReached(true)
       }
-    }, 12000) // 12 segundos
-
+    }, 12000)
     return () => clearTimeout(timeoutId)
   }, [loading])
 
   useEffect(() => {
-    console.log('📊 DashboardLayout: useEffect executado:', {
-      loading,
-      hasUser: !!user,
-      hasProfile: !!profile,
-      profileRole: profile?.role,
-      allowedRoles
-    })
-    
     if (!loading) {
-      if (!user) {
-        console.log('📊 DashboardLayout: Sem usuário, redirecionando para login')
+      if (!user || !profile) {
         navigate('/login')
         return
       }
-
-      if (!profile) {
-        console.log('📊 DashboardLayout: Sem perfil, redirecionando para login')
-        navigate('/login')
-        return
-      }
-
       if (!allowedRoles.includes(profile.role)) {
-        console.log('📊 DashboardLayout: Role não permitido, redirecionando para unauthorized')
         navigate('/unauthorized')
         return
       }
-
-      console.log('✅ DashboardLayout: Todas as verificações passaram, mostrando dashboard')
     }
   }, [user, profile, loading, allowedRoles, navigate])
 
-  // Redirecionar para login se timeout
   if (timeoutReached) {
-    console.log('📊 DashboardLayout: Timeout atingido, redirecionando para login')
     return <Navigate to="/login" replace />
   }
 
-  // Show loading while checking authentication (com limite de tempo)
   if (loading && !timeoutReached) {
-    console.log('📊 DashboardLayout: Mostrando loading')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loading />
-          <p className="mt-4 text-sm text-gray-600">Verificando permissões...</p>
-          <p className="mt-2 text-xs text-gray-500">Aguarde um momento</p>
-        </div>
+        <Loading />
+        <p className="mt-4 text-sm text-gray-600">Verificando permissões...</p>
       </div>
     )
   }
 
-  // Show error if there's an authentication error
   if (error) {
-    console.log('🚨 DashboardLayout: Mostrando erro:', error)
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <Alert className="max-w-md">
@@ -102,33 +64,9 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     )
   }
 
-  // Show loading if user or profile is missing (will redirect)
-  if (!user || !profile) {
-    console.log('📊 DashboardLayout: Usuário ou perfil ausente, mostrando loading durante redirecionamento')
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loading />
-          <p className="mt-4 text-sm text-gray-600">Redirecionando...</p>
-        </div>
-      </div>
-    )
-  }
+  if (!user || !profile) return null
+  if (!allowedRoles.includes(profile.role)) return null
 
-  // Show loading if user doesn't have permission (will redirect)
-  if (!allowedRoles.includes(profile.role)) {
-    console.log('📊 DashboardLayout: Role não permitido, mostrando loading durante redirecionamento')
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loading />
-          <p className="mt-4 text-sm text-gray-600">Verificando permissões...</p>
-        </div>
-      </div>
-    )
-  }
-
-  console.log('✅ DashboardLayout: Renderizando dashboard para role:', profile.role)
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />

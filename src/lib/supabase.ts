@@ -1,45 +1,25 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-// Fallback values for development
-const FALLBACK_SUPABASE_URL = 'https://your-project.supabase.co'
-const FALLBACK_SUPABASE_ANON_KEY = 'your-anon-key-here'
-
-// Singleton instance
-let supabaseInstance: SupabaseClient | null = null
-
-export const createSupabaseClient = (): SupabaseClient => {
-  // Return existing instance if already created
-  if (supabaseInstance) {
-    return supabaseInstance
-  }
-
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY
+export const createSupabaseClient = () => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
   
-  // Only warn in development if real values are missing
-  if (import.meta.env.DEV && (supabaseUrl === FALLBACK_SUPABASE_URL || supabaseAnonKey === FALLBACK_SUPABASE_ANON_KEY)) {
-    console.warn('Using fallback Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.')
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Missing Supabase environment variables')
+    // Retornar um cliente com valores padrão para evitar crash
+    return createClient('https://placeholder.supabase.co', 'placeholder-key')
   }
   
-  // Only throw error in production if real values are missing
-  if (import.meta.env.PROD && (supabaseUrl === FALLBACK_SUPABASE_URL || supabaseAnonKey === FALLBACK_SUPABASE_ANON_KEY)) {
-    throw new Error('Missing Supabase environment variables in production')
-  }
-  
-  // Create and store the singleton instance
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+  return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce'
+      flowType: 'implicit'
     }
   })
-  
-  return supabaseInstance
 }
 
-// Export the singleton instance directly for convenience
 export const supabase = createSupabaseClient()
 
 export type Database = {

@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import type { Database } from '@/lib/supabase'
 
-type UserProfile = Database['public']['Tables']['user_profiles']['Row']
+// Definir o tipo UserProfile diretamente aqui para evitar problemas de importação
+interface UserProfile {
+  id: string
+  user_id: string | null
+  role: 'admin' | 'ctr' | 'parceiro' | 'checkup'
+  empresa_id: string | null
+  nome: string
+  created_at: string | null
+  updated_at: string | null
+}
+
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -91,7 +100,7 @@ export function useAuth() {
         if (error.code === 'PGRST116') {
           // Profile not found - this is a critical error
           console.error('Profile not found for user:', userId)
-          setError('Perfil de usuário não encontrado. Entre em contato com o administrador.')
+          setError('Perfil de usuário não encontrado')
           setProfile(null)
         } else {
           console.error('Error fetching user profile:', error)
@@ -115,7 +124,6 @@ export function useAuth() {
   const signIn = async (email: string, password: string) => {
     try {
       setError(null)
-      setLoading(true)
       
       console.log('Attempting sign in for:', email)
       
@@ -127,19 +135,16 @@ export function useAuth() {
       if (error) {
         console.error('Sign in error:', error)
         setError(error.message)
-        setLoading(false)
         return { error }
       }
       
       console.log('Sign in successful, user:', data.user?.id)
       
-      // Don't set loading to false here - let the auth state change handle it
       return { error: null }
     } catch (err) {
       console.error('Sign in exception:', err)
       const errorMessage = 'Erro ao fazer login'
       setError(errorMessage)
-      setLoading(false)
       return { error: { message: errorMessage } }
     }
   }

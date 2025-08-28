@@ -55,16 +55,15 @@ export default function LoginPage() {
       if (signInError) {
         console.error('LoginPage: Sign in error:', signInError)
         setLoginError(signInError.message || 'Erro ao fazer login')
-        setIsSubmitting(false)
         return
       }
 
       console.log('LoginPage: Sign in successful, waiting for auth state change...')
-      // Don't set isSubmitting to false here - let the redirect handle it
       
     } catch (error: any) {
       console.error('LoginPage: Login exception:', error)
       setLoginError('Erro inesperado ao fazer login')
+    } finally {
       setIsSubmitting(false)
     }
   }

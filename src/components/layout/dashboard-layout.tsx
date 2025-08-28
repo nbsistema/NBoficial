@@ -67,7 +67,7 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <Alert className="max-w-md">
           <AlertDescription>
-            {error}
+            {error}. Please check your Supabase configuration.
           </AlertDescription>
         </Alert>
       </div>

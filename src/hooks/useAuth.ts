@@ -1,67 +1,93 @@
-import { createContext, useContext, useEffect, useState } from "react"
-import { supabase } from "../lib/supabase"
-import { User } from "@supabase/supabase-js"
-import { useUserProfile } from "../hooks/useUserProfile"
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import type { User } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
+import { useUserProfile } from '@/hooks/useUserProfile'
 
-type AuthContextType = {
-  user: User | null
-  loadingUser: boolean
-  loadingProfile: boolean
+// --- Tipos auxiliares ---
+export type Role = 'admin' | 'ctr' | 'parceiro' | 'checkup' | (string & {})
+export type Profile = {
+  id: string
+  role: Role
+  // Campos adicionais do seu perfil
+  [k: string]: unknown
 }
 
+// --- Tipo do contexto ---
+type AuthContextType = {
+  user: User | null
+  profile: Profile | null
+  loading: boolean
+  error: string | null
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
+  signOut: () => Promise<void>
+  refresh: () => Promise<void>
+}
+
+// --- Contexto ---
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  loadingUser: true,
-  loadingProfile: false,
+  profile: null,
+  loading: true,
+  error: null,
+  signIn: async () => ({ error: null }),
+  signOut: async () => {},
+  refresh: async () => {},
 })
 
+// --- Provider ---
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loadingUser, setLoadingUser] = useState(true)
-  const { fetchUserProfile, loading: loadingProfile } = useUserProfile()
+  const [error, setError] = useState<string | null>(null)
 
+  // Hook de perfil deve expor: { profile, loading, fetchUserProfile, error }
+  const {
+    profile,
+    loading: loadingProfile,
+    fetchUserProfile,
+    error: profileError,
+  } = useUserProfile()
+
+  // Carregamento inicial + sessão corrente
   useEffect(() => {
     let mounted = true
 
-    async function loadUser() {
-      console.log("🔧 useAuth: Verificando sessão inicial...")
-      const { data, error } = await supabase.auth.getSession()
+    async function loadInitial() {
+      try {
+        const { data, error } = await supabase.auth.getSession()
+        if (!mounted) return
 
-      if (!mounted) return
-      if (error) {
-        console.error("❌ Erro ao buscar sessão inicial:", error.message)
-        setUser(null)
-        setLoadingUser(false)
-        return
+        if (error) {
+          console.error('❌ Erro ao buscar sessão inicial:', error.message)
+          setError(error.message)
+          setUser(null)
+          setLoadingUser(false)
+          return
+        }
+
+        const sessionUser = data.session?.user ?? null
+        setUser(sessionUser)
+
+        if (sessionUser) {
+          await fetchUserProfile(sessionUser.id)
+        }
+      } catch (e: any) {
+        console.error('❌ Exceção em loadInitial:', e)
+        setError(e?.message || 'Erro ao inicializar sessão')
+      } finally {
+        if (mounted) setLoadingUser(false)
       }
-
-      const session = data.session
-      console.log(
-        "🔧 useAuth: Status da sessão:",
-        session?.user?.id ? "Usuário encontrado" : "Sem usuário"
-      )
-      setUser(session?.user ?? null)
-
-      if (session?.user) {
-        console.log("🔧 useAuth: Buscando perfil do usuário:", session.user.id)
-        await fetchUserProfile(session.user.id)
-      }
-
-      setLoadingUser(false)
     }
 
-    loadUser()
+    loadInitial()
 
-    // Listener para mudanças de auth
+    // Escuta mudanças de autenticação
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("🔄 Evento de auth:", event)
-
-        if (session?.user) {
-          setUser(session.user)
-          await fetchUserProfile(session.user.id)
-        } else {
-          setUser(null)
+      async (_event, session) => {
+        const nextUser = session?.user ?? null
+        setUser(nextUser)
+        if (nextUser) {
+          await fetchUserProfile(nextUser.id)
         }
       }
     )
@@ -72,13 +98,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchUserProfile])
 
-  return (
-    <AuthContext.Provider value={{ user, loadingUser, loadingProfile }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  // Propaga erros do hook de perfil
+  useEffect(() => {
+    if (profileError) setError(profileError)
+  }, [profileError])
+
+  // Ações expostas
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) setError(error.message)
+    return { error }
+  }
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setUser(null)
+  }
+
+  const refresh = async () => {
+    try {
+      const { data, error } = await supabase.auth.getSession()
+      if (error) throw error
+      const nextUser = data.session?.user ?? null
+      setUser(nextUser)
+      if (nextUser) await fetchUserProfile(nextUser.id)
+    } catch (e: any) {
+      setError(e?.message || 'Erro ao atualizar sessão')
+    }
+  }
+
+  const loading = useMemo(() => loadingUser || loadingProfile, [loadingUser, loadingProfile])
+
+  const value = useMemo<AuthContextType>(() => ({
+    user,
+    profile: (profile as Profile) || null,
+    loading,
+    error,
+    signIn,
+    signOut,
+    refresh,
+  }), [user, profile, loading, error])
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+// --- Hook ---
 export function useAuth() {
   return useContext(AuthContext)
 }

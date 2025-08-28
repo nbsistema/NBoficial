@@ -4,8 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  # O Netlify já define NODE_ENV=production automaticamente,
-  # não precisa declarar de novo
+  NODE_ENV = "production"
 
 [build.processing]
   skip_processing = false
@@ -21,7 +20,7 @@
 [build.processing.html]
   pretty_urls = true
 
-# Redirecionamento para SPA (React Router)
+# Redirecionamento para single-page app (React Router)
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -40,4 +39,5 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
 

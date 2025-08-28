@@ -5,6 +5,8 @@ import './app/globals.css'
 
 console.log('🚀 Main: Inicializando aplicação React')
 console.log('🚀 Main: Ambiente:', import.meta.env.MODE)
+console.log('[BOOT] main.tsx entrou')
+document.body.setAttribute('data-boot', 'ok')
 console.log('🚀 Main: Variáveis de ambiente disponíveis:', {
   hasSupabaseUrl: !!import.meta.env.VITE_SUPABASE_URL,
   hasSupabaseKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,

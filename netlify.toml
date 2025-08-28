@@ -3,8 +3,10 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18"
+NODE_VERSION = "18"
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  NODE_ENV = "production"
+  NPM_FLAGS = "--include=dev"
   # Variáveis para debug em produção
   NODE_ENV = "production"
 

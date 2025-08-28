@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Alert, AlertDescription } from '../components/ui/alert'
@@ -6,6 +6,7 @@ import { Loading } from '../components/ui/loading'
 
 const HomePage: React.FC = () => {
   const { user, profile, loading, error } = useAuth()
+  const [forceRedirect, setForceRedirect] = useState(false)
 
   console.log('🏠 HomePage: Renderizando com estado:', { 
     user: user?.id ? 'exists' : 'null', 
@@ -14,14 +15,33 @@ const HomePage: React.FC = () => {
     error 
   })
 
+  // Timeout de segurança para evitar loop infinito
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ HomePage: Timeout no loading, forçando redirecionamento')
+        setForceRedirect(true)
+      }
+    }, 15000) // 15 segundos
+
+    return () => clearTimeout(timeoutId)
+  }, [loading])
+
+  // Forçar redirecionamento para login se timeout
+  if (forceRedirect) {
+    console.log('🏠 HomePage: Redirecionamento forçado para login')
+    return <Navigate to="/login" replace />
+  }
+
   // Show loading while checking authentication
-  if (loading) {
+  if (loading && !forceRedirect) {
     console.log('🏠 HomePage: Mostrando loading')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loading />
-          <p className="mt-4 text-sm text-gray-600">Carregando...</p>
+          <p className="mt-4 text-sm text-gray-600">Verificando autenticação...</p>
+          <p className="mt-2 text-xs text-gray-500">Se esta tela persistir, recarregue a página</p>
         </div>
       </div>
     )

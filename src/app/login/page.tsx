@@ -16,8 +16,10 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { user, profile, loading, error, signIn } = useAuth()
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (com timeout de segurança)
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+    
     console.log('🔐 LoginPage: useEffect - verificando autenticação:', {
       loading,
       hasUser: !!user,
@@ -25,7 +27,16 @@ export default function LoginPage() {
       profileRole: profile?.role
     })
     
+    // Timeout de segurança
+    timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ LoginPage: Timeout na verificação de autenticação')
+        // Não fazer nada, deixar o usuário na tela de login
+      }
+    }, 10000)
+    
     if (!loading && user && profile) {
+      clearTimeout(timeoutId)
       console.log('🔐 LoginPage: Usuário já autenticado, redirecionando para:', profile.role)
       switch (profile.role) {
         case 'admin':
@@ -48,6 +59,10 @@ export default function LoginPage() {
           console.log('🔐 LoginPage: Role desconhecido, redirecionando para /')
           navigate('/', { replace: true })
       }
+    }
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
     }
   }, [user, profile, loading, navigate])
 
@@ -84,7 +99,7 @@ export default function LoginPage() {
   }
 
   // Show loading if checking auth state
-  if (loading) {
+  if (loading && !error) {
     console.log('🔐 LoginPage: Mostrando loading')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -92,7 +107,8 @@ export default function LoginPage() {
           <div className="bg-blue-100 p-3 rounded-full inline-block mb-4">
             <Stethoscope className="h-8 w-8 text-blue-600" />
           </div>
-          <p className="text-sm text-gray-600">Verificando autenticação...</p>
+          <p className="text-sm text-gray-600">Carregando sistema...</p>
+          <p className="text-xs text-gray-500 mt-2">Aguarde um momento</p>
         </div>
       </div>
     )

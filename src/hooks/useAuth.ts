@@ -25,11 +25,21 @@ export function useAuth() {
 
   useEffect(() => {
     let mounted = true
+    let timeoutId: NodeJS.Timeout
     console.log('🔧 useAuth: useEffect executado')
 
     const initializeAuth = async () => {
       try {
         console.log('🔧 useAuth: Inicializando autenticação...')
+        
+        // Timeout de segurança para evitar loop infinito
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            console.warn('⚠️ useAuth: Timeout na inicialização, finalizando loading')
+            setLoading(false)
+            setError('Timeout na inicialização da autenticação')
+          }
+        }, 10000) // 10 segundos
         
         // Get initial session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
@@ -41,10 +51,13 @@ export function useAuth() {
         })
         
         if (!mounted) return
+        
+        // Limpar timeout se chegou até aqui
+        if (timeoutId) clearTimeout(timeoutId)
 
         if (sessionError) {
           console.error('🚨 useAuth: Erro na sessão:', sessionError)
-          setError('Erro ao obter sessão')
+          setError('Erro ao obter sessão: ' + sessionError.message)
           setLoading(false)
           return
         }
@@ -61,8 +74,9 @@ export function useAuth() {
         }
       } catch (err) {
         if (!mounted) return
+        if (timeoutId) clearTimeout(timeoutId)
         console.error('🚨 useAuth: Erro na inicialização:', err)
-        setError('Erro ao inicializar autenticação')
+        setError('Erro ao inicializar autenticação: ' + (err as Error).message)
         setLoading(false)
       }
     }
@@ -101,19 +115,32 @@ export function useAuth() {
     return () => {
       console.log('🔧 useAuth: Cleanup executado')
       mounted = false
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [])
 
   const fetchUserProfile = async (userId: string) => {
+    let timeoutId: NodeJS.Timeout
+    
     try {
       console.log('🔧 useAuth: Buscando perfil para usuário:', userId)
+      
+      // Timeout de segurança
+      timeoutId = setTimeout(() => {
+        console.warn('⚠️ useAuth: Timeout na busca do perfil')
+        setError('Timeout ao buscar perfil do usuário')
+        setLoading(false)
+      }, 8000) // 8 segundos
       
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
         .single()
+
+      // Limpar timeout
+      if (timeoutId) clearTimeout(timeoutId)
 
       console.log('🔧 useAuth: Resposta da consulta de perfil:', { 
         data, 
@@ -144,8 +171,9 @@ export function useAuth() {
         setError(null)
       }
     } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId)
       console.error('🚨 useAuth: Exceção ao buscar perfil:', err)
-      setError('Erro ao buscar perfil do usuário')
+      setError('Erro ao buscar perfil do usuário: ' + (err as Error).message)
       setProfile(null)
     } finally {
       console.log('🔧 useAuth: Finalizando loading do perfil')

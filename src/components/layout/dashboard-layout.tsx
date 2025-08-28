@@ -14,6 +14,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps) {
   const { user, profile, loading, error } = useAuth()
   const navigate = useNavigate()
+  const [timeoutReached, setTimeoutReached] = useState(false)
 
   console.log('📊 DashboardLayout: Renderizando com estado:', { 
     user: user?.id ? 'exists' : 'null', 
@@ -22,6 +23,18 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     error,
     allowedRoles 
   })
+
+  // Timeout de segurança
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ DashboardLayout: Timeout no loading')
+        setTimeoutReached(true)
+      }
+    }, 12000) // 12 segundos
+
+    return () => clearTimeout(timeoutId)
+  }, [loading])
 
   useEffect(() => {
     console.log('📊 DashboardLayout: useEffect executado:', {
@@ -55,14 +68,21 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     }
   }, [user, profile, loading, allowedRoles, navigate])
 
-  // Show loading while checking authentication
-  if (loading) {
+  // Redirecionar para login se timeout
+  if (timeoutReached) {
+    console.log('📊 DashboardLayout: Timeout atingido, redirecionando para login')
+    return <Navigate to="/login" replace />
+  }
+
+  // Show loading while checking authentication (com limite de tempo)
+  if (loading && !timeoutReached) {
     console.log('📊 DashboardLayout: Mostrando loading')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loading />
-          <p className="mt-4 text-sm text-gray-600">Carregando dashboard...</p>
+          <p className="mt-4 text-sm text-gray-600">Verificando permissões...</p>
+          <p className="mt-2 text-xs text-gray-500">Aguarde um momento</p>
         </div>
       </div>
     )

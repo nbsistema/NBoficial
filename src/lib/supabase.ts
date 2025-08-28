@@ -17,8 +17,8 @@ export const createSupabaseClient = () => {
     console.error('🚨 Supabase: Variáveis de ambiente ausentes!')
     console.error('🚨 Supabase: VITE_SUPABASE_URL:', supabaseUrl ? 'definida' : 'AUSENTE')
     console.error('🚨 Supabase: VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'definida' : 'AUSENTE')
-    // Retornar um cliente com valores padrão para evitar crash
-    return createClient('https://placeholder.supabase.co', 'placeholder-key')
+    // Lançar erro para evitar comportamento inesperado
+    throw new Error('Configuração do Supabase ausente. Verifique as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.')
   }
   
   console.log('✅ Supabase: Criando cliente com configurações válidas')

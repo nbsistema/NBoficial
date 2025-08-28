@@ -62,10 +62,10 @@ export default function CheckupDashboard() {
       setError(null)
       // Buscar estatísticas da empresa
       const [
-        { count: totalBaterias },
-        { count: totalFuncionarios },
-        { count: solicitacoesPendentes },
-        { count: solicitacoesConcluidas }
+        { count: totalBaterias } = { count: 0 },
+        { count: totalFuncionarios } = { count: 0 },
+        { count: solicitacoesPendentes } = { count: 0 },
+        { count: solicitacoesConcluidas } = { count: 0 }
       ] = await Promise.all([
         supabase.from('checkups').select('*', { count: 'exact', head: true }).eq('empresa_id', profile.empresa_id),
         supabase.from('pacientes').select('*', { count: 'exact', head: true }).eq('empresa_id', profile.empresa_id),

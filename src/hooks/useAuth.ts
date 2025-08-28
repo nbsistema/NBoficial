@@ -20,41 +20,54 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Debug: Log inicial
+  console.log('🔧 useAuth: Hook inicializado')
+
   useEffect(() => {
     let mounted = true
+    console.log('🔧 useAuth: useEffect executado')
 
     const initializeAuth = async () => {
       try {
-        console.log('Initializing auth...')
+        console.log('🔧 useAuth: Inicializando autenticação...')
         
         // Get initial session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        console.log('🔧 useAuth: Resposta getSession:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+          error: sessionError 
+        })
         
         if (!mounted) return
 
         if (sessionError) {
-          console.error('Session error:', sessionError)
+          console.error('🚨 useAuth: Erro na sessão:', sessionError)
           setError('Erro ao obter sessão')
           setLoading(false)
           return
         }
 
-        console.log('Session:', session?.user?.id ? 'Found' : 'Not found')
+        console.log('🔧 useAuth: Status da sessão:', session?.user?.id ? 'Usuário encontrado' : 'Sem usuário')
         setUser(session?.user ?? null)
         
         if (session?.user) {
+          console.log('🔧 useAuth: Buscando perfil do usuário:', session.user.id)
           await fetchUserProfile(session.user.id)
         } else {
+          console.log('🔧 useAuth: Sem usuário, finalizando loading')
           setLoading(false)
         }
       } catch (err) {
         if (!mounted) return
-        console.error('Auth initialization error:', err)
+        console.error('🚨 useAuth: Erro na inicialização:', err)
         setError('Erro ao inicializar autenticação')
         setLoading(false)
       }
     }
 
+    console.log('🔧 useAuth: Chamando initializeAuth')
     initializeAuth()
 
     // Listen for auth changes
@@ -62,15 +75,20 @@ export function useAuth() {
       async (event, session) => {
         if (!mounted) return
 
-        console.log('Auth state change:', event, session?.user?.id ? 'User found' : 'No user')
+        console.log('🔧 useAuth: Mudança de estado:', event, {
+          hasUser: !!session?.user,
+          userId: session?.user?.id
+        })
         
         setUser(session?.user ?? null)
         
         if (session?.user) {
           // Reset error when user logs in
           setError(null)
+          console.log('🔧 useAuth: Usuário logado, buscando perfil')
           await fetchUserProfile(session.user.id)
         } else {
+          console.log('🔧 useAuth: Usuário deslogado')
           setProfile(null)
           setError(null)
           setLoading(false)
@@ -78,7 +96,10 @@ export function useAuth() {
       }
     )
 
+    console.log('🔧 useAuth: Listener configurado')
+
     return () => {
+      console.log('🔧 useAuth: Cleanup executado')
       mounted = false
       subscription.unsubscribe()
     }
@@ -86,37 +107,48 @@ export function useAuth() {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('Fetching profile for user:', userId)
+      console.log('🔧 useAuth: Buscando perfil para usuário:', userId)
       
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
         .single()
+
+      console.log('🔧 useAuth: Resposta da consulta de perfil:', { 
+        data, 
+        error,
+        hasData: !!data 
+      })
         
       if (error) {
-        console.error('Profile fetch error:', error)
+        console.error('🚨 useAuth: Erro ao buscar perfil:', error)
         
         if (error.code === 'PGRST116') {
           // Profile not found - this is a critical error
-          console.error('Profile not found for user:', userId)
+          console.error('🚨 useAuth: Perfil não encontrado para usuário:', userId)
           setError('Perfil de usuário não encontrado')
           setProfile(null)
         } else {
-          console.error('Error fetching user profile:', error)
+          console.error('🚨 useAuth: Erro geral ao buscar perfil:', error)
           setError('Erro ao buscar perfil do usuário')
           setProfile(null)
         }
       } else {
-        console.log('Profile found:', data?.role)
+        console.log('✅ useAuth: Perfil encontrado:', { 
+          role: data?.role, 
+          nome: data?.nome,
+          empresa_id: data?.empresa_id 
+        })
         setProfile(data)
         setError(null)
       }
     } catch (err) {
-      console.error('Fetch profile error:', err)
+      console.error('🚨 useAuth: Exceção ao buscar perfil:', err)
       setError('Erro ao buscar perfil do usuário')
       setProfile(null)
     } finally {
+      console.log('🔧 useAuth: Finalizando loading do perfil')
       setLoading(false)
     }
   }
@@ -125,24 +157,30 @@ export function useAuth() {
     try {
       setError(null)
       
-      console.log('Attempting sign in for:', email)
+      console.log('🔧 useAuth: Tentando login para:', email)
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
+
+      console.log('🔧 useAuth: Resposta do login:', { 
+        hasUser: !!data?.user,
+        userId: data?.user?.id,
+        error 
+      })
       
       if (error) {
-        console.error('Sign in error:', error)
+        console.error('🚨 useAuth: Erro no login:', error)
         setError(error.message)
         return { error }
       }
       
-      console.log('Sign in successful, user:', data.user?.id)
+      console.log('✅ useAuth: Login bem-sucedido:', data.user?.id)
       
       return { error: null }
     } catch (err) {
-      console.error('Sign in exception:', err)
+      console.error('🚨 useAuth: Exceção no login:', err)
       const errorMessage = 'Erro ao fazer login'
       setError(errorMessage)
       return { error: { message: errorMessage } }
@@ -151,25 +189,39 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
+      console.log('🔧 useAuth: Fazendo logout')
       setError(null)
       const { error } = await supabase.auth.signOut()
       
       if (error) {
+        console.error('🚨 useAuth: Erro no logout:', error)
         setError(error.message)
         return { error }
       }
       
       // Clear local state
+      console.log('🔧 useAuth: Limpando estado local')
       setUser(null)
       setProfile(null)
       
       return { error: null }
     } catch (err) {
+      console.error('🚨 useAuth: Exceção no logout:', err)
       const errorMessage = 'Erro ao fazer logout'
       setError(errorMessage)
       return { error: { message: errorMessage } }
     }
   }
+
+  // Debug: Log do estado atual
+  console.log('🔧 useAuth: Estado atual:', {
+    hasUser: !!user,
+    userId: user?.id,
+    hasProfile: !!profile,
+    profileRole: profile?.role,
+    loading,
+    error
+  })
 
   return {
     user,

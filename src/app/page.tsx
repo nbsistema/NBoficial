@@ -7,7 +7,7 @@ import { Loading } from '../components/ui/loading'
 const HomePage: React.FC = () => {
   const { user, profile, loading, error } = useAuth()
 
-  console.log('HomePage render:', { 
+  console.log('🏠 HomePage: Renderizando com estado:', { 
     user: user?.id ? 'exists' : 'null', 
     profile: profile?.role || 'null', 
     loading, 
@@ -16,7 +16,7 @@ const HomePage: React.FC = () => {
 
   // Show loading while checking authentication
   if (loading) {
-    console.log('HomePage: showing loading')
+    console.log('🏠 HomePage: Mostrando loading')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -29,12 +29,12 @@ const HomePage: React.FC = () => {
 
   // Show error if there's an authentication error
   if (error) {
-    console.log('HomePage: showing error:', error)
+    console.log('🚨 HomePage: Mostrando erro:', error)
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <Alert className="max-w-md">
           <AlertDescription>
-            {error}. Please check your Supabase configuration.
+            {error}. Verifique a configuração do Supabase.
           </AlertDescription>
         </Alert>
       </div>
@@ -43,29 +43,33 @@ const HomePage: React.FC = () => {
 
   // Redirect to login if not authenticated
   if (!user) {
-    console.log('HomePage: no user, redirecting to login')
+    console.log('🏠 HomePage: Sem usuário, redirecionando para login')
     return <Navigate to="/login" replace />
   }
 
   // Redirect to login if no profile found
   if (!profile) {
-    console.log('HomePage: no profile, redirecting to login')
+    console.log('🏠 HomePage: Sem perfil, redirecionando para login')
     return <Navigate to="/login" replace />
   }
 
   // Redirect based on user role
-  console.log('HomePage: redirecting based on role:', profile.role)
+  console.log('🏠 HomePage: Redirecionando baseado no role:', profile.role)
   switch (profile.role) {
     case 'admin':
+      console.log('🏠 HomePage: Redirecionando para /admin')
       return <Navigate to="/admin" replace />
     case 'ctr':
+      console.log('🏠 HomePage: Redirecionando para /ctr')
       return <Navigate to="/ctr" replace />
     case 'parceiro':
+      console.log('🏠 HomePage: Redirecionando para /parceiro')
       return <Navigate to="/parceiro" replace />
     case 'checkup':
+      console.log('🏠 HomePage: Redirecionando para /checkup')
       return <Navigate to="/checkup" replace />
     default:
-      console.log('HomePage: unknown role, redirecting to login')
+      console.log('🚨 HomePage: Role desconhecido, redirecionando para login')
       return <Navigate to="/login" replace />
   }
 }

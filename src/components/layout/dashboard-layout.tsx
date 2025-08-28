@@ -15,7 +15,7 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
   const { user, profile, loading, error } = useAuth()
   const navigate = useNavigate()
 
-  console.log('DashboardLayout render:', { 
+  console.log('📊 DashboardLayout: Renderizando com estado:', { 
     user: user?.id ? 'exists' : 'null', 
     profile: profile?.role || 'null', 
     loading, 
@@ -24,32 +24,40 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
   })
 
   useEffect(() => {
+    console.log('📊 DashboardLayout: useEffect executado:', {
+      loading,
+      hasUser: !!user,
+      hasProfile: !!profile,
+      profileRole: profile?.role,
+      allowedRoles
+    })
+    
     if (!loading) {
       if (!user) {
-        console.log('DashboardLayout: No user, redirecting to login')
+        console.log('📊 DashboardLayout: Sem usuário, redirecionando para login')
         navigate('/login')
         return
       }
 
       if (!profile) {
-        console.log('DashboardLayout: No profile, redirecting to login')
+        console.log('📊 DashboardLayout: Sem perfil, redirecionando para login')
         navigate('/login')
         return
       }
 
       if (!allowedRoles.includes(profile.role)) {
-        console.log('DashboardLayout: Role not allowed, redirecting to unauthorized')
+        console.log('📊 DashboardLayout: Role não permitido, redirecionando para unauthorized')
         navigate('/unauthorized')
         return
       }
 
-      console.log('DashboardLayout: All checks passed, showing dashboard')
+      console.log('✅ DashboardLayout: Todas as verificações passaram, mostrando dashboard')
     }
   }, [user, profile, loading, allowedRoles, navigate])
 
   // Show loading while checking authentication
   if (loading) {
-    console.log('DashboardLayout: showing loading')
+    console.log('📊 DashboardLayout: Mostrando loading')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -62,12 +70,12 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
 
   // Show error if there's an authentication error
   if (error) {
-    console.log('DashboardLayout: showing error:', error)
+    console.log('🚨 DashboardLayout: Mostrando erro:', error)
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <Alert className="max-w-md">
           <AlertDescription>
-            {error}. Please check your Supabase configuration.
+            {error}. Verifique a configuração do Supabase.
           </AlertDescription>
         </Alert>
       </div>
@@ -76,7 +84,7 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
 
   // Show loading if user or profile is missing (will redirect)
   if (!user || !profile) {
-    console.log('DashboardLayout: missing user or profile, showing loading while redirecting')
+    console.log('📊 DashboardLayout: Usuário ou perfil ausente, mostrando loading durante redirecionamento')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -89,7 +97,7 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
 
   // Show loading if user doesn't have permission (will redirect)
   if (!allowedRoles.includes(profile.role)) {
-    console.log('DashboardLayout: role not allowed, showing loading while redirecting')
+    console.log('📊 DashboardLayout: Role não permitido, mostrando loading durante redirecionamento')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -100,7 +108,7 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     )
   }
 
-  console.log('DashboardLayout: rendering dashboard for role:', profile.role)
+  console.log('✅ DashboardLayout: Renderizando dashboard para role:', profile.role)
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />

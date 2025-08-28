@@ -18,22 +18,34 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
+    console.log('🔐 LoginPage: useEffect - verificando autenticação:', {
+      loading,
+      hasUser: !!user,
+      hasProfile: !!profile,
+      profileRole: profile?.role
+    })
+    
     if (!loading && user && profile) {
-      console.log('LoginPage: User already authenticated, redirecting based on role:', profile.role)
+      console.log('🔐 LoginPage: Usuário já autenticado, redirecionando para:', profile.role)
       switch (profile.role) {
         case 'admin':
+          console.log('🔐 LoginPage: Redirecionando para /admin')
           navigate('/admin', { replace: true })
           break
         case 'ctr':
+          console.log('🔐 LoginPage: Redirecionando para /ctr')
           navigate('/ctr', { replace: true })
           break
         case 'parceiro':
+          console.log('🔐 LoginPage: Redirecionando para /parceiro')
           navigate('/parceiro', { replace: true })
           break
         case 'checkup':
+          console.log('🔐 LoginPage: Redirecionando para /checkup')
           navigate('/checkup', { replace: true })
           break
         default:
+          console.log('🔐 LoginPage: Role desconhecido, redirecionando para /')
           navigate('/', { replace: true })
       }
     }
@@ -42,34 +54,38 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('🔐 LoginPage: Iniciando processo de login')
+    
     if (isSubmitting) return
     
     setIsSubmitting(true)
     setLoginError('')
 
     try {
-      console.log('LoginPage: Attempting login for:', email)
+      console.log('🔐 LoginPage: Tentando login para:', email)
       
       const { error: signInError } = await signIn(email, password)
 
       if (signInError) {
-        console.error('LoginPage: Sign in error:', signInError)
+        console.error('🚨 LoginPage: Erro no login:', signInError)
         setLoginError(signInError.message || 'Erro ao fazer login')
         return
       }
 
-      console.log('LoginPage: Sign in successful, waiting for auth state change...')
+      console.log('✅ LoginPage: Login bem-sucedido, aguardando mudança de estado...')
       
     } catch (error: any) {
-      console.error('LoginPage: Login exception:', error)
+      console.error('🚨 LoginPage: Exceção no login:', error)
       setLoginError('Erro inesperado ao fazer login')
     } finally {
+      console.log('🔐 LoginPage: Finalizando processo de login')
       setIsSubmitting(false)
     }
   }
 
   // Show loading if checking auth state
   if (loading) {
+    console.log('🔐 LoginPage: Mostrando loading')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -81,6 +97,8 @@ export default function LoginPage() {
       </div>
     )
   }
+
+  console.log('🔐 LoginPage: Renderizando formulário de login')
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

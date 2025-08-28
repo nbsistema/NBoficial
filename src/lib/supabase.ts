@@ -1,16 +1,29 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 export const createSupabaseClient = () => {
+  console.log('🔧 Supabase: Criando cliente Supabase')
+  
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
   
+  console.log('🔧 Supabase: Variáveis de ambiente:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseAnonKey,
+    url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'undefined',
+    keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0
+  })
+  
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables')
+    console.error('🚨 Supabase: Variáveis de ambiente ausentes!')
+    console.error('🚨 Supabase: VITE_SUPABASE_URL:', supabaseUrl ? 'definida' : 'AUSENTE')
+    console.error('🚨 Supabase: VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'definida' : 'AUSENTE')
     // Retornar um cliente com valores padrão para evitar crash
     return createClient('https://placeholder.supabase.co', 'placeholder-key')
   }
   
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  console.log('✅ Supabase: Criando cliente com configurações válidas')
+  
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -18,8 +31,12 @@ export const createSupabaseClient = () => {
       flowType: 'implicit'
     }
   })
+
+  console.log('✅ Supabase: Cliente criado com sucesso')
+  return client
 }
 
+console.log('🔧 Supabase: Inicializando cliente global')
 export const supabase = createSupabaseClient()
 
 export type Database = {

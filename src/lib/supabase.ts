@@ -1,20 +1,12 @@
-import { createClientComponentClient, createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+// src/lib/supabase.ts
+import { createClient } from "@supabase/supabase-js";
 
-export const createSupabaseClient = () => {
-  return createClientComponentClient()
-}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-export const createSupabaseServerClient = () => {
-  return createServerComponentClient({ cookies })
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
+// Tipagem opcional do banco
 export type Database = {
   public: {
     Tables: {
@@ -22,7 +14,7 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          role: 'admin' | 'ctr' | 'parceiro' | 'checkup'
+          role: "admin" | "ctr" | "parceiro" | "checkup"
           empresa_id: string | null
           nome: string
           created_at: string
@@ -31,7 +23,7 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
-          role: 'admin' | 'ctr' | 'parceiro' | 'checkup'
+          role: "admin" | "ctr" | "parceiro" | "checkup"
           empresa_id?: string | null
           nome: string
           created_at?: string
@@ -40,7 +32,7 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
-          role?: 'admin' | 'ctr' | 'parceiro' | 'checkup'
+          role?: "admin" | "ctr" | "parceiro" | "checkup"
           empresa_id?: string | null
           nome?: string
           created_at?: string

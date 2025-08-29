@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-type UserProfile = {
+export type UserProfile = {
   id: string;
-  username?: string;
-  avatar_url?: string;
-  full_name?: string;
-  // adicione os campos que existem na sua tabela profiles
+  user_id: string;
+  role: "admin" | "ctr" | "parceiro" | "checkup";
+  empresa_id?: string;
+  nome: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export function useUserProfile(userId?: string) {
@@ -22,9 +24,9 @@ export function useUserProfile(userId?: string) {
       setError(null);
 
       const { data, error } = await supabase
-        .from("profiles")
+        .from("user_profiles")
         .select("*")
-        .eq("id", userId)
+        .eq("user_id", userId)
         .single();
 
       if (error) {

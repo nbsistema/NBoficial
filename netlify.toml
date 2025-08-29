@@ -8,7 +8,7 @@ NODE_VERSION = "18"
   NODE_ENV = "production"
   NPM_FLAGS = "--include=dev"
   # Variáveis para debug em produção
-  NODE_ENV = "production"
+
 
 [build.processing]
   skip_processing = false

@@ -27,7 +27,21 @@ const menuItems: Record<string, Array<{ icon: any; label: string; href: string }
     { icon: Users, label: 'Pacientes', href: '/admin/pacientes' },
     { icon: FileText, label: 'Encaminhamentos', href: '/admin/encaminhamentos' },
     { icon: BarChart3, label: 'Relatórios', href: '/admin/relatorios' },
-    { icon: Settings, label: 'Configurações', href: '/admin/configuracoes' }
+    { icon: Settings, label: 'Configurações', href: '/admin/configuracoes' },
+    // Acesso às funcionalidades CTR
+    { icon: FileText, label: 'CTR - Pedidos', href: '/ctr/pedidos' },
+    { icon: Building2, label: 'CTR - Empresas', href: '/ctr/empresas' },
+    { icon: Users, label: 'CTR - Pacientes', href: '/ctr/pacientes' },
+    { icon: BarChart3, label: 'CTR - Relatórios', href: '/ctr/relatorios' },
+    // Acesso às funcionalidades Parceiro
+    { icon: Stethoscope, label: 'Parceiro - Médicos', href: '/parceiro/medicos' },
+    { icon: Activity, label: 'Parceiro - Convênios', href: '/parceiro/convenios' },
+    { icon: FileText, label: 'Parceiro - Encaminhamentos', href: '/parceiro/encaminhamentos' },
+    { icon: UserCheck, label: 'Parceiro - Pacientes', href: '/parceiro/pacientes' },
+    // Acesso às funcionalidades Check-up
+    { icon: ClipboardList, label: 'Check-up - Baterias', href: '/checkup/baterias' },
+    { icon: Users, label: 'Check-up - Funcionários', href: '/checkup/funcionarios' },
+    { icon: Calendar, label: 'Check-up - Solicitações', href: '/checkup/solicitacoes' }
   ],
   ctr: [
     { icon: Home, label: 'Dashboard', href: '/ctr' },

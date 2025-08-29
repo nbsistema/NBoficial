@@ -152,7 +152,7 @@ export default function ParceiroDashboard() {
     )
   }
   return (
-    <DashboardLayout allowedRoles={['parceiro']}>
+    <DashboardLayout allowedRoles={['parceiro', 'admin']}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Parceiro</h1>

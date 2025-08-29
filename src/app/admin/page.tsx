@@ -12,9 +12,13 @@ import {
   AlertTriangle,
   TrendingUp,
   Calendar,
-  CheckCircle
+  CheckCircle,
+  Home,
+  Stethoscope,
+  ClipboardList
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { Link } from 'react-router-dom'
 
 interface DashboardStats {
   totalEncaminhamentos: number
@@ -193,6 +197,67 @@ export default function AdminDashboard() {
             icon={TrendingUp}
             description="Percentual executado"
           />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Acesso Rápido - CTR</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link to="/ctr">
+                <Button className="w-full justify-start" variant="outline">
+                  <Home className="mr-2 h-4 w-4" />
+                  Dashboard CTR
+                </Button>
+              </Link>
+              <Link to="/ctr/pedidos">
+                <Button className="w-full justify-start" variant="outline">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Gerenciar Pedidos
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Acesso Rápido - Parceiros</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link to="/parceiro">
+                <Button className="w-full justify-start" variant="outline">
+                  <Home className="mr-2 h-4 w-4" />
+                  Dashboard Parceiro
+                </Button>
+              </Link>
+              <Link to="/parceiro/medicos">
+                <Button className="w-full justify-start" variant="outline">
+                  <Stethoscope className="mr-2 h-4 w-4" />
+                  Gerenciar Médicos
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Acesso Rápido - Check-up</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link to="/checkup">
+                <Button className="w-full justify-start" variant="outline">
+                  <Home className="mr-2 h-4 w-4" />
+                  Dashboard Check-up
+                </Button>
+              </Link>
+              <Link to="/checkup/baterias">
+                <Button className="w-full justify-start" variant="outline">
+                  <ClipboardList className="mr-2 h-4 w-4" />
+                  Gerenciar Baterias
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Gráficos */}

@@ -32,7 +32,8 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
         navigate('/login')
         return
       }
-      if (!allowedRoles.includes(profile.role)) {
+      // Admin tem acesso a tudo, outros perfis seguem as regras normais
+      if (profile.role !== 'admin' && !allowedRoles.includes(profile.role)) {
         navigate('/unauthorized')
         return
       }
@@ -65,7 +66,8 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
   }
 
   if (!user || !profile) return null
-  if (!allowedRoles.includes(profile.role)) return null
+  // Admin tem acesso a tudo, outros perfis seguem as regras normais
+  if (profile.role !== 'admin' && !allowedRoles.includes(profile.role)) return null
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

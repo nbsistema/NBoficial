@@ -16,10 +16,19 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
   const navigate = useNavigate()
   const [timeoutReached, setTimeoutReached] = useState(false)
 
+  console.log('🏗️ DashboardLayout: Estado atual:', {
+    hasUser: !!user,
+    profileRole: profile?.role,
+    loading,
+    allowedRoles,
+    error
+  })
+
   // Timeout de segurança
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (loading) {
+        console.warn('⚠️ DashboardLayout: Timeout no loading')
         setTimeoutReached(true)
       }
     }, 12000)
@@ -27,28 +36,48 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
   }, [loading])
 
   useEffect(() => {
-    if (!loading) {
-      if (!user || !profile) {
+    if (!loading && !timeoutReached) {
+      if (!user) {
+        console.log('🏗️ DashboardLayout: Sem usuário, redirecionando para login')
         navigate('/login')
         return
       }
-      // Admin tem acesso a tudo, outros perfis seguem as regras normais
-      if (profile.role !== 'admin' && !allowedRoles.includes(profile.role)) {
+      
+      if (!profile) {
+        console.log('🏗️ DashboardLayout: Sem perfil, redirecionando para login')
+        navigate('/login')
+        return
+      }
+
+      // Admin tem acesso total ao sistema
+      if (profile.role === 'admin') {
+        console.log('🏗️ DashboardLayout: Admin detectado, acesso liberado')
+        return
+      }
+
+      // Outros perfis seguem as regras de autorização
+      if (!allowedRoles.includes(profile.role)) {
+        console.log('🏗️ DashboardLayout: Role não autorizado:', profile.role, 'permitidos:', allowedRoles)
         navigate('/unauthorized')
         return
       }
+
+      console.log('🏗️ DashboardLayout: Acesso autorizado para role:', profile.role)
     }
-  }, [user, profile, loading, allowedRoles, navigate])
+  }, [user, profile, loading, allowedRoles, navigate, timeoutReached])
 
   if (timeoutReached) {
+    console.log('🏗️ DashboardLayout: Timeout atingido, redirecionando')
     return <Navigate to="/login" replace />
   }
 
-  if (loading && !timeoutReached) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loading />
-        <p className="mt-4 text-sm text-gray-600">Verificando permissões...</p>
+        <div className="text-center">
+          <Loading />
+          <p className="mt-4 text-sm text-gray-600">Verificando permissões...</p>
+        </div>
       </div>
     )
   }
@@ -56,7 +85,7 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-        <Alert className="max-w-md">
+        <Alert className="max-w-md" variant="destructive">
           <AlertDescription>
             {error}. Verifique a configuração do Supabase.
           </AlertDescription>
@@ -65,9 +94,16 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     )
   }
 
-  if (!user || !profile) return null
-  // Admin tem acesso a tudo, outros perfis seguem as regras normais
-  if (profile.role !== 'admin' && !allowedRoles.includes(profile.role)) return null
+  if (!user || !profile) {
+    return <Navigate to="/login" replace />
+  }
+
+  // Admin tem acesso total, outros seguem as regras
+  const hasAccess = profile.role === 'admin' || allowedRoles.includes(profile.role)
+  
+  if (!hasAccess) {
+    return <Navigate to="/unauthorized" replace />
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

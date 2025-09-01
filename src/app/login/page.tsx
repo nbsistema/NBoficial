@@ -16,60 +16,38 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { user, profile, loading, error, signIn } = useAuth()
 
-  // Redirect if already authenticated (com timeout de segurança)
+  // Redirecionar se já autenticado
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout
-    
-    console.log('🔐 LoginPage: useEffect - verificando autenticação:', {
+    console.log('🔐 LoginPage: Verificando autenticação:', {
       loading,
       hasUser: !!user,
       hasProfile: !!profile,
       profileRole: profile?.role
     })
     
-    // Timeout de segurança
-    timeoutId = setTimeout(() => {
-      if (loading) {
-        console.warn('⚠️ LoginPage: Timeout na verificação de autenticação')
-        // Não fazer nada, deixar o usuário na tela de login
-      }
-    }, 10000)
-    
     if (!loading && user && profile) {
-      clearTimeout(timeoutId)
-      console.log('🔐 LoginPage: Usuário já autenticado, redirecionando para:', profile.role)
+      console.log('🔐 LoginPage: Usuário já autenticado, redirecionando...')
       switch (profile.role) {
         case 'admin':
-          console.log('🔐 LoginPage: Redirecionando para /admin')
           navigate('/admin', { replace: true })
           break
         case 'ctr':
-          console.log('🔐 LoginPage: Redirecionando para /ctr')
           navigate('/ctr', { replace: true })
           break
         case 'parceiro':
-          console.log('🔐 LoginPage: Redirecionando para /parceiro')
           navigate('/parceiro', { replace: true })
           break
         case 'checkup':
-          console.log('🔐 LoginPage: Redirecionando para /checkup')
           navigate('/checkup', { replace: true })
           break
         default:
-          console.log('🔐 LoginPage: Role desconhecido, redirecionando para /')
           navigate('/', { replace: true })
       }
-    }
-    
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId)
     }
   }, [user, profile, loading, navigate])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    console.log('🔐 LoginPage: Iniciando processo de login')
     
     if (isSubmitting) return
     
@@ -77,7 +55,7 @@ export default function LoginPage() {
     setLoginError('')
 
     try {
-      console.log('🔐 LoginPage: Tentando login para:', email)
+      console.log('🔐 LoginPage: Iniciando login para:', email)
       
       const { error: signInError } = await signIn(email, password)
 
@@ -87,20 +65,19 @@ export default function LoginPage() {
         return
       }
 
-      console.log('✅ LoginPage: Login bem-sucedido, aguardando mudança de estado...')
+      console.log('✅ LoginPage: Login iniciado com sucesso')
+      // O redirecionamento será feito pelo useEffect quando o estado mudar
       
     } catch (error: any) {
       console.error('🚨 LoginPage: Exceção no login:', error)
       setLoginError('Erro inesperado ao fazer login')
     } finally {
-      console.log('🔐 LoginPage: Finalizando processo de login')
       setIsSubmitting(false)
     }
   }
 
-  // Show loading if checking auth state
-  if (loading && !error) {
-    console.log('🔐 LoginPage: Mostrando loading')
+  // Mostrar loading se verificando estado de auth
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -108,13 +85,10 @@ export default function LoginPage() {
             <Stethoscope className="h-8 w-8 text-blue-600" />
           </div>
           <p className="text-sm text-gray-600">Carregando sistema...</p>
-          <p className="text-xs text-gray-500 mt-2">Aguarde um momento</p>
         </div>
       </div>
     )
   }
-
-  console.log('🔐 LoginPage: Renderizando formulário de login')
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { StatsCard } from '@/components/dashboard/stats-card'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Activity, 
@@ -45,7 +46,6 @@ export default function AdminDashboard() {
   const [chartData, setChartData] = useState<any[]>([])
   const [pieData, setPieData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadDashboardData()
@@ -53,7 +53,6 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      setError(null)
       // Buscar estatísticas gerais
       const [
         totalEncaminhamentosResult,
@@ -119,23 +118,11 @@ export default function AdminDashboard() {
 
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error)
-      setError('Erro ao carregar dados do dashboard')
     } finally {
       setLoading(false)
     }
   }
 
-  if (error) {
-    return (
-      <DashboardLayout allowedRoles={['admin']}>
-        <div className="space-y-6">
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </div>
-      </DashboardLayout>
-    )
-  }
   return (
     <DashboardLayout allowedRoles={['admin']}>
       <div className="space-y-6">
@@ -198,6 +185,8 @@ export default function AdminDashboard() {
             description="Percentual executado"
           />
         </div>
+
+        {/* Acesso Rápido para Admin */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader>

@@ -18,6 +18,7 @@ export function useUserProfile() {
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     if (!userId) {
+      console.log('⚠️ useUserProfile: userId vazio, limpando perfil')
       setProfile(null);
       return;
     }
@@ -37,10 +38,10 @@ export function useUserProfile() {
       if (error) {
         if (error.code === 'PGRST116') {
           console.warn('⚠️ useUserProfile: Perfil não encontrado para userId:', userId);
-          setError('Perfil de usuário não encontrado');
+          setError(`Perfil não encontrado para o usuário ${userId}. Verifique se o perfil foi criado no banco de dados.`);
         } else {
           console.error('❌ useUserProfile: Erro ao buscar perfil:', error);
-          setError(error.message);
+          setError(`Erro ao buscar perfil: ${error.message}`);
         }
         setProfile(null);
       } else {
@@ -50,7 +51,7 @@ export function useUserProfile() {
       }
     } catch (e: any) {
       console.error('❌ useUserProfile: Exceção ao buscar perfil:', e);
-      setError(e?.message || 'Erro ao buscar perfil do usuário');
+      setError(`Exceção ao buscar perfil: ${e?.message || 'Erro desconhecido'}`);
       setProfile(null);
     } finally {
       setLoading(false);

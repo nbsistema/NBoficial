@@ -46,13 +46,18 @@ export default function AdminDashboard() {
   const [chartData, setChartData] = useState<any[]>([])
   const [pieData, setPieData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    console.log('📊 AdminDashboard: Carregando dados...')
     loadDashboardData()
   }, [])
 
   const loadDashboardData = async () => {
     try {
+      setError(null)
+      console.log('📊 AdminDashboard: Iniciando carregamento de dados')
+      
       // Buscar estatísticas gerais
       const [
         totalEncaminhamentosResult,
@@ -70,6 +75,8 @@ export default function AdminDashboard() {
         supabase.from('pacientes').select('*', { count: 'exact', head: true })
       ])
 
+      console.log('📊 AdminDashboard: Dados básicos carregados')
+
       // Encaminhamentos de hoje
       const hoje = new Date().toISOString().split('T')[0]
       const encaminhamentosHojeResult = await supabase
@@ -85,6 +92,11 @@ export default function AdminDashboard() {
         totalEmpresas: totalEmpresasResult.count || 0,
         totalPacientes: totalPacientesResult.count || 0,
         encaminhamentosHoje: encaminhamentosHojeResult.count || 0
+      })
+
+      console.log('📊 AdminDashboard: Stats atualizadas:', {
+        totalEncaminhamentos: totalEncaminhamentosResult.count || 0,
+        executados: executadosResult.count || 0
       })
 
       // Dados para gráfico de barras (últimos 7 dias)
@@ -118,9 +130,25 @@ export default function AdminDashboard() {
 
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error)
+      setError(`Erro ao carregar dados: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     } finally {
       setLoading(false)
     }
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout allowedRoles={['admin']}>
+        <div className="space-y-6">
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button onClick={loadDashboardData}>
+            Tentar Novamente
+          </Button>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (

@@ -4,6 +4,12 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
+console.log('🔧 Supabase: Configuração:', {
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseAnonKey,
+  url: supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'AUSENTE'
+})
+
 if (!supabaseUrl) {
   throw new Error('VITE_SUPABASE_URL é obrigatório')
 }
@@ -16,7 +22,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    debug: import.meta.env.DEV
   }
 });
 

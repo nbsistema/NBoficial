@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Carregamento inicial da sessão
   useEffect(() => {
     let mounted = true
+    let timeoutId: NodeJS.Timeout
 
     async function loadInitialSession() {
       try {
@@ -86,6 +87,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
+
+    // Timeout de segurança para evitar loading infinito
+    timeoutId = setTimeout(() => {
+      if (mounted && loadingUser) {
+        console.warn('⚠️ AuthProvider: Timeout no carregamento inicial, forçando fim do loading')
+        setLoadingUser(false)
+        setError('Timeout ao carregar sessão')
+      }
+    }, 8000)
 
     loadInitialSession()
 
@@ -127,6 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [fetchUserProfile, clearProfile])

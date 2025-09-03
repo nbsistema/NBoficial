@@ -56,11 +56,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Carregamento inicial da sessão
   useEffect(() => {
     let mounted = true
-    let timeoutId: NodeJS.Timeout
 
     async function loadInitialSession() {
       try {
         console.log('🔐 AuthProvider: Carregando sessão inicial...', new Date().toISOString())
+        console.log('🔐 AuthProvider: Supabase config:', {
+          url: supabase.supabaseUrl?.substring(0, 30) + '...',
+          hasKey: !!supabase.supabaseKey
+        })
         
         const { data: { session }, error } = await supabase.auth.getSession()
         
@@ -75,6 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const sessionUser = session?.user ?? null
         setUser(sessionUser)
+        
+        console.log('🔐 AuthProvider: Sessão obtida:', {
+          hasSession: !!session,
+          hasUser: !!sessionUser,
+          userId: sessionUser?.id
+        })
         
         if (sessionUser) {
           console.log('✅ AuthProvider: Usuário encontrado na sessão:', sessionUser.id)
@@ -139,32 +148,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUserProfile = async (user: User) => {
     try {
       console.log('👤 AuthProvider: Carregando perfil para usuário:', user.id)
+      console.log('👤 AuthProvider: Email do usuário:', user.email)
       setProfileChecked(false)
       
-      // Buscar perfil existente
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
+      // Usar o hook useUserProfile para buscar o perfil
+      await fetchUserProfile(user.id)
       
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('❌ AuthProvider: Erro ao buscar perfil:', fetchError)
-        setError(`Erro ao buscar perfil: ${fetchError.message}`)
-        setProfileChecked(true)
-        return
-      }
+      // Aguardar um pouco para o hook processar
+      await new Promise(resolve => setTimeout(resolve, 1000))
       
-      if (existingProfile) {
-        console.log('✅ AuthProvider: Perfil encontrado:', existingProfile)
-        await fetchUserProfile(user.id)
-      } else {
-        console.warn('⚠️ AuthProvider: Perfil não encontrado para usuário:', user.id)
-        console.log('📧 AuthProvider: Email do usuário:', user.email)
-        
-        // Definir mensagem de erro mais clara
-        setError(`Perfil não encontrado para o usuário ${user.email}. Entre em contato com o administrador para criar seu perfil no sistema.`)
-      }
+      console.log('👤 AuthProvider: Processo de carregamento de perfil concluído')
       
     } catch (e: any) {
       console.error('❌ AuthProvider: Exceção ao carregar perfil:', e)
@@ -177,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Limpar erro quando perfil for carregado com sucesso
   useEffect(() => {
     if (profile && error) {
+      console.log('✅ AuthProvider: Perfil carregado, limpando erro')
       setError(null)
     }
   }, [profile, error])
@@ -184,6 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Propagar erros do perfil
   useEffect(() => {
     if (profileError) {
+      console.log('❌ AuthProvider: Erro do perfil propagado:', profileError)
       setError(profileError)
     }
   }, [profileError])

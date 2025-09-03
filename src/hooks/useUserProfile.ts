@@ -18,12 +18,10 @@ export function useUserProfile() {
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     console.log('🔍 useUserProfile: Iniciando busca de perfil para userId:', userId);
+    console.log('🔍 useUserProfile: Timestamp:', new Date().toISOString());
     
     if (!userId) {
       console.warn('⚠️ useUserProfile: userId vazio, limpando perfil');
-    }
-    if (!userId) {
-      console.log('⚠️ useUserProfile: userId vazio, limpando perfil')
       setProfile(null);
       return;
     }
@@ -33,33 +31,59 @@ export function useUserProfile() {
 
     try {
       console.log('🔍 useUserProfile: Executando query no Supabase...');
+      console.log('🔍 useUserProfile: Supabase client status:', {
+        hasClient: !!supabase,
+        url: supabase.supabaseUrl?.substring(0, 30) + '...'
+      });
       
       const { data, error } = await supabase
         .from("user_profiles")
-        .select("*")
+        .select(`
+          id,
+          user_id,
+          role,
+          empresa_id,
+          nome,
+          created_at,
+          updated_at
+        `)
         .eq("user_id", userId)
         .single();
+
+      console.log('🔍 useUserProfile: Query executada. Resultado:', {
+        hasData: !!data,
+        hasError: !!error,
+        errorCode: error?.code,
+        errorMessage: error?.message
+      });
 
       if (error) {
         if (error.code === 'PGRST116') {
           console.warn('⚠️ useUserProfile: Perfil não encontrado (PGRST116) para userId:', userId);
-          setError(null); // Não definir como erro, apenas não encontrado
+          setError(`Perfil não encontrado para o usuário. Entre em contato com o administrador.`);
         } else {
           console.error('❌ useUserProfile: Erro ao buscar perfil:', {
             code: error.code,
             message: error.message,
-            details: error.details
+            details: error.details,
+            hint: error.hint
           });
           setError(`Erro ao buscar perfil: ${error.message}`);
         }
         setProfile(null);
       } else {
-        console.log('✅ useUserProfile: Perfil encontrado:', data);
+        console.log('✅ useUserProfile: Perfil encontrado:', {
+          id: data.id,
+          role: data.role,
+          nome: data.nome,
+          empresa_id: data.empresa_id
+        });
         setProfile(data);
         setError(null);
       }
     } catch (e: any) {
       console.error('❌ useUserProfile: Exceção inesperada ao buscar perfil:', e);
+      console.error('❌ useUserProfile: Stack trace:', e.stack);
       setError(`Exceção ao buscar perfil: ${e?.message || 'Erro desconhecido'}`);
       setProfile(null);
     } finally {

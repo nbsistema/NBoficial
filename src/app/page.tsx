@@ -30,18 +30,20 @@ const HomePage: React.FC = () => {
       profileEmpresaId: profile?.empresa_id,
       loading,
       error,
-      forceRedirect
+      forceRedirect,
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL?.substring(0, 30) + '...',
+      hasSupabaseKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
     })
   }, [user, profile, loading, error, forceRedirect])
 
-  // Timeout de segurança mais longo
+  // Timeout de segurança
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (loading) {
         console.warn('⚠️ HomePage: Timeout no loading, forçando redirecionamento', debugInfo)
         setForceRedirect(true)
       }
-    }, 20000) // 20 segundos
+    }, 30000) // 30 segundos
 
     return () => clearTimeout(timeoutId)
   }, [loading, debugInfo])

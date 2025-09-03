@@ -7,7 +7,8 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 console.log('🔧 Supabase: Configuração:', {
   hasUrl: !!supabaseUrl,
   hasKey: !!supabaseAnonKey,
-  url: supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'AUSENTE'
+  url: supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'AUSENTE',
+  mode: import.meta.env.MODE
 })
 
 if (!supabaseUrl) {
@@ -23,7 +24,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    debug: import.meta.env.DEV
+    debug: import.meta.env.DEV,
+    flowType: 'pkce'
+  },
+  db: {
+    schema: 'public'
+  },
+  global: {
+    headers: {
+      'x-my-custom-header': 'sistema-ctr'
+    }
   }
 });
 

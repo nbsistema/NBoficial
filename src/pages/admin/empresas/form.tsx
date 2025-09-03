@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Save, ArrowLeft } from 'lucide-react'
+import { Save } from 'lucide-react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
@@ -116,7 +116,7 @@ export default function EmpresaFormPage() {
 
   if (loadingData) {
     return (
-      <DashboardLayout allowedRoles={['admin']}>
+      <DashboardLayout requireAdmin={true}>
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -128,7 +128,7 @@ export default function EmpresaFormPage() {
   }
 
   return (
-    <DashboardLayout allowedRoles={['admin']}>
+    <DashboardLayout requireAdmin={true}>
       <PageHeader
         title={isEditing ? 'Editar Empresa' : 'Nova Empresa'}
         description={isEditing ? 'Atualize os dados da empresa' : 'Cadastre uma nova empresa no sistema'}
@@ -229,7 +229,6 @@ export default function EmpresaFormPage() {
                   variant="outline"
                   onClick={() => navigate('/admin/empresas')}
                 >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={loading}>

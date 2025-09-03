@@ -6,6 +6,14 @@ export const ROLES = {
   CHECKUP: 'checkup'
 } as const
 
+// Hierarquia de permissões (do maior para o menor)
+export const ROLE_HIERARCHY = {
+  admin: 4,
+  ctr: 3,
+  parceiro: 2,
+  checkup: 1
+} as const
+
 export const STATUS_ENCAMINHAMENTO = {
   ENCAMINHADO: 'encaminhado',
   EXECUTADO: 'executado',
@@ -35,6 +43,14 @@ export const ROLE_LABELS = {
   [ROLES.CTR]: 'Recepção CTR',
   [ROLES.PARCEIRO]: 'Parceiro',
   [ROLES.CHECKUP]: 'Empresa Check-up'
+} as const
+
+// Permissões por role
+export const ROLE_PERMISSIONS = {
+  [ROLES.ADMIN]: ['all'], // Admin tem acesso a tudo
+  [ROLES.CTR]: ['read_all', 'manage_encaminhamentos', 'manage_pacientes'],
+  [ROLES.PARCEIRO]: ['read_own', 'manage_own_data'],
+  [ROLES.CHECKUP]: ['read_own', 'manage_own_checkups']
 } as const
 
 export const STATUS_LABELS = {

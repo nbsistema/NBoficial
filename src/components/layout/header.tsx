@@ -12,7 +12,7 @@ import {
 import { LogOut, Settings, User } from 'lucide-react'
 
 export function Header() {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, isAdmin } = useAuth()
 
   if (!profile) return null
 
@@ -29,6 +29,9 @@ export function Header() {
         <div>
           <h1 className="text-xl font-semibold text-gray-900">
             Bem-vindo, {profile.nome}
+            {isAdmin && (
+              <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Admin</span>
+            )}
           </h1>
           <p className="text-sm text-gray-500 capitalize">
             {profile.role === 'admin' && 'Administrador'}
@@ -52,7 +55,7 @@ export function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{profile.nome}</p>
-                <p className="text-xs leading-none text-muted-foreground capitalize">
+                <p className="text-xs leading-none text-muted-foreground">
                   {profile.role}
                 </p>
               </div>

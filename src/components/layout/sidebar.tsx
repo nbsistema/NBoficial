@@ -55,7 +55,7 @@ const menuItems: Record<string, Array<{ icon: any; label: string; href: string }
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, isAdmin } = useAuth()
 
   if (!profile) return null
 
@@ -70,7 +70,10 @@ export function Sidebar() {
         <div className="flex items-center justify-between">
           {!collapsed && (
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Sistema CTR</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Sistema CTR
+                {isAdmin && <span className="text-xs text-blue-600 ml-2">(Admin)</span>}
+              </h2>
               <p className="text-sm text-gray-500 capitalize">{profile.role}</p>
             </div>
           )}

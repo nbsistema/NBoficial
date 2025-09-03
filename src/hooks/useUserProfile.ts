@@ -17,6 +17,10 @@ export function useUserProfile() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchUserProfile = useCallback(async (userId: string) => {
+    console.log('🔍 useUserProfile: Iniciando busca de perfil para userId:', userId);
+    
+    if (!userId) {
+      console.warn('⚠️ useUserProfile: userId vazio, limpando perfil');
     if (!userId) {
       console.log('⚠️ useUserProfile: userId vazio, limpando perfil')
       setProfile(null);
@@ -27,7 +31,7 @@ export function useUserProfile() {
     setError(null);
 
     try {
-      console.log('🔍 useUserProfile: Buscando perfil para userId:', userId);
+      console.log('🔍 useUserProfile: Executando query no Supabase...');
       
       const { data, error } = await supabase
         .from("user_profiles")
@@ -37,10 +41,14 @@ export function useUserProfile() {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.warn('⚠️ useUserProfile: Perfil não encontrado para userId:', userId);
+          console.warn('⚠️ useUserProfile: Perfil não encontrado (PGRST116) para userId:', userId);
           setError(`Perfil não encontrado para o usuário ${userId}. Verifique se o perfil foi criado no banco de dados.`);
         } else {
-          console.error('❌ useUserProfile: Erro ao buscar perfil:', error);
+          console.error('❌ useUserProfile: Erro ao buscar perfil:', {
+            code: error.code,
+            message: error.message,
+            details: error.details
+          });
           setError(`Erro ao buscar perfil: ${error.message}`);
         }
         setProfile(null);
@@ -50,7 +58,7 @@ export function useUserProfile() {
         setError(null);
       }
     } catch (e: any) {
-      console.error('❌ useUserProfile: Exceção ao buscar perfil:', e);
+      console.error('❌ useUserProfile: Exceção inesperada ao buscar perfil:', e);
       setError(`Exceção ao buscar perfil: ${e?.message || 'Erro desconhecido'}`);
       setProfile(null);
     } finally {
@@ -59,6 +67,7 @@ export function useUserProfile() {
   }, []);
 
   const clearProfile = useCallback(() => {
+    console.log('🧹 useUserProfile: Limpando perfil');
     setProfile(null);
     setError(null);
     setLoading(false);

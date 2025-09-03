@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState, useMemo } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { Header } from './header'
@@ -8,11 +8,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface DashboardLayoutProps {
   children: ReactNode
-  allowedRoles: Array<'admin' | 'ctr' | 'parceiro' | 'checkup'>
+  allowedRoles?: Array<'admin' | 'ctr' | 'parceiro' | 'checkup'>
+  requireAdmin?: boolean
 }
 
-export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps) {
-  const { user, profile, loading, error } = useAuth()
+export function DashboardLayout({ children, allowedRoles = [], requireAdmin = false }: DashboardLayoutProps) {
+  const { user, profile, loading, error, hasPermission, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [timeoutReached, setTimeoutReached] = useState(false)
   const [debugInfo, setDebugInfo] = useState<any>({})
@@ -22,6 +23,7 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     userId: user?.id,
     profileRole: profile?.role,
     loading,
+    isAdmin,
     allowedRoles,
     error
   })
@@ -35,6 +37,7 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
       hasProfile: !!profile,
       profileRole: profile?.role,
       loading,
+      isAdmin,
       allowedRoles,
       error,
       timeoutReached
@@ -52,6 +55,20 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     return () => clearTimeout(timeoutId)
   }, [loading, debugInfo])
 
+  // Verificação de permissões
+  const hasAccess = useMemo(() => {
+    if (!profile) return false
+    
+    // Admin sempre tem acesso total
+    if (isAdmin) return true
+    
+    // Se requer admin especificamente
+    if (requireAdmin) return false
+    
+    // Verificar roles permitidos
+    return allowedRoles.length === 0 || hasPermission(allowedRoles)
+  }, [profile, isAdmin, requireAdmin, allowedRoles, hasPermission])
+
   useEffect(() => {
     if (!loading && !timeoutReached) {
       if (!user) {
@@ -66,15 +83,9 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
         return
       }
 
-      // Admin tem acesso total ao sistema
-      if (profile.role === 'admin') {
-        console.log('🏗️ DashboardLayout: Admin detectado, acesso liberado', debugInfo)
-        return
-      }
-
-      // Outros perfis seguem as regras de autorização
-      if (!allowedRoles.includes(profile.role)) {
-        console.log('🏗️ DashboardLayout: Role não autorizado:', profile.role, 'permitidos:', allowedRoles, debugInfo)
+      // Verificar acesso
+      if (!hasAccess) {
+        console.log('🏗️ DashboardLayout: Acesso negado:', profile.role, 'permitidos:', allowedRoles, debugInfo)
         navigate('/unauthorized')
         return
       }
@@ -129,9 +140,6 @@ export function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps
     return <Navigate to="/login" replace />
   }
 
-  // Admin tem acesso total, outros seguem as regras
-  const hasAccess = profile.role === 'admin' || allowedRoles.includes(profile.role)
-  
   if (!hasAccess) {
     return <Navigate to="/unauthorized" replace />
   }

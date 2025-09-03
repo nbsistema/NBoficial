@@ -19,6 +19,7 @@ import {
   ClipboardList
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 interface DashboardStats {
@@ -152,7 +153,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <DashboardLayout allowedRoles={['admin']}>
+    <DashboardLayout requireAdmin={true}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Administrativo</h1>

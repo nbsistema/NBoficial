@@ -15,6 +15,7 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   refresh: () => Promise<void>
+  hasPermission: (requiredRoles: Role[]) => boolean
   isAdmin: boolean
   isCTR: boolean
   hasFullAccess: boolean
@@ -29,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   signIn: async () => ({ error: null }),
   signOut: async () => {},
   refresh: async () => {},
+  hasPermission: () => false,
   isAdmin: false,
   isCTR: false,
   hasFullAccess: false,
@@ -218,10 +220,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const hasPermission = useCallback((requiredRoles: Role[]) => {
+    if (!profile) return false
+    return requiredRoles.includes(profile.role)
+  }, [profile])
+
   const loading = useMemo(() => loadingUser || loadingProfile, [loadingUser, loadingProfile])
-  const isAdmin = useMemo(() => profile?.role === 'admin', [profile?.role])
-  const isCTR = useMemo(() => profile?.role === 'ctr', [profile?.role])
-  const hasFullAccess = useMemo(() => profile?.role === 'admin', [profile?.role])
+  const isAdmin = useMemo(() => profile?.role === 'admin', [profile])
+  const isCTR = useMemo(() => profile?.role === 'ctr', [profile])
+  const hasFullAccess = useMemo(() => profile?.role === 'admin', [profile])
 
   const value = useMemo<AuthContextType>(() => ({
     user,
@@ -231,6 +238,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     refresh,
+    hasPermission,
     isAdmin,
     isCTR,
     hasFullAccess,

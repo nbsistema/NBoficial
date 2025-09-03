@@ -21,6 +21,7 @@ export function useUserProfile() {
     
     if (!userId) {
       console.warn('⚠️ useUserProfile: userId vazio, limpando perfil');
+    }
     if (!userId) {
       console.log('⚠️ useUserProfile: userId vazio, limpando perfil')
       setProfile(null);

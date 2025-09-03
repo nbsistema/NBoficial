@@ -16,7 +16,7 @@ import {
   Eye,
   Clock
 } from 'lucide-react'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime } from '@/lib/formatters'
 import { Link } from 'react-router-dom'
 
 interface CheckupStats {

@@ -15,7 +15,8 @@ import {
   Plus,
   Eye
 } from 'lucide-react'
-import { formatDateTime, getStatusColor, getStatusLabel } from '@/lib/utils'
+import { formatDateTime } from '@/lib/formatters'
+import { getStatusColor, getStatusLabel } from '@/lib/utils'
 import { Link } from 'react-router-dom'
 
 interface ParceiroStats {

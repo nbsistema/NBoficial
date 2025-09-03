@@ -17,6 +17,7 @@ type AuthContextType = {
   refresh: () => Promise<void>
   isAdmin: boolean
   isCTR: boolean
+  hasFullAccess: boolean
 }
 
 // --- Contexto ---
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType>({
   refresh: async () => {},
   isAdmin: false,
   isCTR: false,
+  hasFullAccess: false,
 })
 
 // --- Provider ---
@@ -219,6 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loading = useMemo(() => loadingUser || loadingProfile, [loadingUser, loadingProfile])
   const isAdmin = useMemo(() => profile?.role === 'admin', [profile?.role])
   const isCTR = useMemo(() => profile?.role === 'ctr', [profile?.role])
+  const hasFullAccess = useMemo(() => profile?.role === 'admin', [profile?.role])
 
   const value = useMemo<AuthContextType>(() => ({
     user,
@@ -230,7 +233,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refresh,
     isAdmin,
     isCTR,
-  }), [user, profile, loading, error, isAdmin, isCTR])
+    hasFullAccess,
+  }), [user, profile, loading, error, isAdmin, isCTR, hasFullAccess])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

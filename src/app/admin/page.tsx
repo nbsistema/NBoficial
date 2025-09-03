@@ -215,10 +215,36 @@ export default function AdminDashboard() {
         </div>
 
         {/* Acesso Rápido para Admin */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Acesso Rápido - CTR</CardTitle>
+              <CardTitle>Administração</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link to="/admin/empresas">
+                <Button className="w-full justify-start" variant="outline">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  Gerenciar Empresas
+                </Button>
+              </Link>
+              <Link to="/admin/usuarios">
+                <Button className="w-full justify-start" variant="outline">
+                  <Users className="mr-2 h-4 w-4" />
+                  Gerenciar Usuários
+                </Button>
+              </Link>
+              <Link to="/admin/configuracoes">
+                <Button className="w-full justify-start" variant="outline">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Configurações
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Acesso CTR</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Link to="/ctr">
@@ -238,7 +264,7 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Acesso Rápido - Parceiros</CardTitle>
+              <CardTitle>Acesso Parceiros</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Link to="/parceiro">
@@ -258,7 +284,7 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Acesso Rápido - Check-up</CardTitle>
+              <CardTitle>Acesso Check-up</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Link to="/checkup">

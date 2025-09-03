@@ -13,6 +13,20 @@ export function formatCNPJ(cnpj: string) {
   return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
 }
 
+export function formatPhone(phone: string) {
+  // Remove todos os caracteres não numéricos
+  const numbers = phone.replace(/\D/g, '')
+  
+  // Formata baseado no tamanho
+  if (numbers.length === 11) {
+    return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+  } else if (numbers.length === 10) {
+    return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3')
+  }
+  
+  return phone
+}
+
 export function formatDate(date: string | Date) {
   return new Intl.DateTimeFormat('pt-BR').format(new Date(date))
 }

@@ -24,6 +24,7 @@ const menuItems: Record<string, Array<{ icon: any; label: string; href: string }
   admin: [
     { icon: Home, label: 'Dashboard', href: '/admin' },
     { icon: Building2, label: 'Empresas', href: '/admin/empresas' },
+    { icon: Users, label: 'Usuários', href: '/admin/usuarios' },
     { icon: Users, label: 'Pacientes', href: '/admin/pacientes' },
     { icon: FileText, label: 'Encaminhamentos', href: '/admin/encaminhamentos' },
     { icon: BarChart3, label: 'Relatórios', href: '/admin/relatorios' },

@@ -43,7 +43,7 @@ export function useUserProfile() {
       if (error) {
         if (error.code === 'PGRST116') {
           console.warn('⚠️ useUserProfile: Perfil não encontrado (PGRST116) para userId:', userId);
-          setError(`Perfil não encontrado para o usuário ${userId}. Verifique se o perfil foi criado no banco de dados.`);
+          setError(null); // Não definir como erro, apenas não encontrado
         } else {
           console.error('❌ useUserProfile: Erro ao buscar perfil:', {
             code: error.code,

@@ -6,7 +6,7 @@ import { Loading } from '../components/ui/loading'
 
 const HomePage: React.FC = () => {
   const { user, profile, loading, error } = useAuth()
-  const [timeoutReached, setTimeoutReached] = useState(false)
+  const [forceRedirect, setForceRedirect] = useState(false)
   const [debugInfo, setDebugInfo] = useState<any>({})
 
   console.log('🏠 HomePage: Estado atual:', { 
@@ -30,25 +30,25 @@ const HomePage: React.FC = () => {
       profileEmpresaId: profile?.empresa_id,
       loading,
       error,
-      timeoutReached
+      forceRedirect
     })
-  }, [user, profile, loading, error, timeoutReached])
+  }, [user, profile, loading, error, forceRedirect])
 
-  // Timeout de segurança para evitar loading infinito
+  // Timeout de segurança mais longo
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (loading) {
-        console.warn('⚠️ HomePage: Timeout no loading, redirecionando para login', debugInfo)
-        setTimeoutReached(true)
+        console.warn('⚠️ HomePage: Timeout no loading, forçando redirecionamento', debugInfo)
+        setForceRedirect(true)
       }
-    }, 12000) // 12 segundos
+    }, 20000) // 20 segundos
 
     return () => clearTimeout(timeoutId)
   }, [loading, debugInfo])
 
   // Redirecionamento forçado por timeout
-  if (timeoutReached) {
-    console.log('🏠 HomePage: Redirecionamento forçado para login por timeout', debugInfo)
+  if (forceRedirect) {
+    console.log('🏠 HomePage: Redirecionamento forçado para login', debugInfo)
     return <Navigate to="/login" replace />
   }
 
